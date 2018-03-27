@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?><!--<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"--><!--xmlns:tools="http://schemas.android.com/tools"--><!--android:layout_width="120dp"--><!--android:layout_height="178dp"--><!--android:padding="16dp">-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ll_movie_layout"
+    android:layout_width="@dimen/movie_poster_width"
+    android:layout_height="@dimen/movie_poster_height"
+    android:orientation="vertical"
+    android:padding="2dp">
+
+    <TextView
+        android:id="@+id/tv_movie_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        tools:text="42" />
+
+    <TextView
+        android:id="@+id/tv_view_holder_instance"
+        android:layout_width="match_parent"
+        android:layout_height="38dp"
+        android:layout_gravity="bottom"
+        android:background="@color/colorAccent"
+        android:gravity="bottom"
+        android:textColor="#000"
+        tools:text="ViewHolder instance: 7" />
+    <!--style="@style/TextAppearance.AppCompat.Title"-->
+
+
+    <!--<TextView-->
+    <!--android:id="@+id/tv_movie_title"-->
+    <!--style="@style/TextAppearance.AppCompat.Title"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_gravity="center_vertical|start"-->
+    <!--android:fontFamily="monospace"-->
+    <!--android:textSize="12sp"-->
+    <!--tools:text="42" />-->
+
+</LinearLayout>

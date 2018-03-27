@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">PJ Pop Movies1</string>
+    <string name="action_sort">Sort</string>
+    <string name="error_message">An error has occurred. Please try again by clicking REFRESH.</string>
+    <string name="APIKEY">your-api-key-goes-here</string>
+</resources>
