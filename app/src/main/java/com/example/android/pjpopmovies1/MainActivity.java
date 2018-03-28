@@ -57,22 +57,22 @@ public class MainActivity extends AppCompatActivity
         int screenWidthPx = (int) (config.screenWidthDp * dens);
 //        int screenHeight = (int) (config.screenHeightDp * dens);
         int itemWidthPx = (int) (getResources().getDimension(R.dimen.movie_poster_width));
-        int minMarginWidthPx = (int) (6 * dens);
         // to get minColumnWidthPx, add poster size (itemWidthPx) from dimens file
         // to minMarginWidthPx of 6dp (*2 because left and right margins)
-        int minColumnWidthPx = (int) (itemWidthPx + (2 * minMarginWidthPx));
-        int numberOfColumns = screenWidthPx / minColumnWidthPx + 1;
+        int minMarginWidthPx = (int) (6 * dens);
+        int minColumnWidthPx = itemWidthPx + (2 * minMarginWidthPx);
+        int numberOfColumns = (screenWidthPx / minColumnWidthPx) + 1;
         int movieItemMarginPx = 0;
 
-        Log.d(TAG, "dens: " + dens);
-        Log.d(TAG, "itemWidthPx: " + itemWidthPx);
-        Log.d(TAG, "screenWidthPx: " + screenWidthPx);
-        Log.d(TAG, "minMarginWidthPx: " + minMarginWidthPx);
-        Log.d(TAG, "minItemWidthPx: " + minColumnWidthPx);
+//        Log.d(TAG, "dens: " + dens);
+//        Log.d(TAG, "itemWidthPx: " + itemWidthPx);
+//        Log.d(TAG, "screenWidthPx: " + screenWidthPx);
+//        Log.d(TAG, "minMarginWidthPx: " + minMarginWidthPx);
+//        Log.d(TAG, "minItemWidthPx: " + minColumnWidthPx);
 
-        while (movieItemMarginPx < 6) {
-            Log.d(TAG, "numberOfColumns: " + numberOfColumns);
-            Log.d(TAG, "movieItemMarginPx: " + movieItemMarginPx);
+        while (movieItemMarginPx < minMarginWidthPx) {
+//            Log.d(TAG, "numberOfColumns: " + numberOfColumns);
+//            Log.d(TAG, "movieItemMarginPx: " + movieItemMarginPx);
 
             numberOfColumns--;
             movieItemMarginPx = (screenWidthPx - (itemWidthPx * numberOfColumns)) / ((numberOfColumns) * 2);
@@ -226,7 +226,7 @@ public class MainActivity extends AppCompatActivity
             try {
                 String jsonMovieResponse = NetworkUtils
                         .getResponseFromHttpUrl(MoviesRequestUrl);
-//                Log.d(TAG, "jsonMovieResponse:" + jsonMovieResponse);
+                Log.d(TAG, "jsonMovieResponse:" + jsonMovieResponse);
                 String[][] JsonMovieData = MovieJsonUtils
                         .getMovieStringsFromJson(MainActivity.this, jsonMovieResponse);
 
@@ -242,15 +242,13 @@ public class MainActivity extends AppCompatActivity
         protected void onPostExecute(String[][] moviesData) {
             mLoadingIndicator.setVisibility(View.INVISIBLE);
             if (moviesData != null) {
-                Log.d(TAG, "in post execute, moviesData not eq null:");
+                Log.d(TAG, "in post execute, moviesData not eq null");
                 showMoviesDataView();
                 mAdapter.setMovieData(moviesData);
             } else {
-                Log.d(TAG, "in post execute, moviesData is null:");
+                Log.d(TAG, "in post execute, moviesData is null");
                 showErrorMessage();
             }
         }
     }
-
-
 }

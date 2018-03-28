@@ -18,11 +18,8 @@ public class MovieJsonUtils {
     private static final String TAG = MovieJsonUtils.class.getSimpleName();
 
     /**
-     * This method parses JSON from a web response and returns an array of Strings
+     * This method parses JSON from a web response and returns an 2d array of Strings
      * <p/>
-     * Later on, we'll be parsing the JSON into structured data within the
-     * getFullMovieDataFromJson function, leveraging the data we have stored in the JSON. For
-     * now, we just convert the JSON into human-readable strings.
      *
      * @param movieJsonStr JSON response from server
      * @return Array of Strings describing movie data
@@ -34,16 +31,13 @@ public class MovieJsonUtils {
         // In TMDB's returned json data, each movie's info is an element of the "results" array
         final String TMBD_LIST = "results";
 
-//        final String TMBD_ID = "id";
         // keynames used in TMDB's json data
         final String TMBD_TITLE = "title";
         final String TMBD_POSTER = "poster_path";
         final String TMBD_OVERVIEW = "overview";
         final String TMBD_RATING = "vote_average";
         final String TMBD_MESSAGE_CODE = "cod";
-
-
-//        String[][] parsedMovieData = null;
+//        final String TMBD_ID = "id";
 
         JSONObject movieJson = new JSONObject(movieJsonStr);
 
@@ -97,12 +91,12 @@ public class MovieJsonUtils {
 //     * Parse the JSON and convert it into ContentValues that can be inserted into our database.
 //     *
 //     * @param context         An application context, such as a service or activity context.
-//     * @param forecastJsonStr The JSON to parse into ContentValues.
+//     * @param movieJsonStr The JSON to parse into ContentValues.
 //     *
 //     * @return An array of ContentValues parsed from the JSON.
 //     */
-//    public static ContentValues[] getFullWeatherDataFromJson(Context context, String forecastJsonStr) {
-//        /** This will be implemented in a future lesson **/
+//    public static ContentValues[] getFullMovieDataFromJson(Context context, String movieJsonStr) {
 //        return null;
 //    }
+
 }
