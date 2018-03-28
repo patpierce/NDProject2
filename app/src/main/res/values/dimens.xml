@@ -3,5 +3,6 @@
 
     <dimen name="movie_poster_width">135dp</dimen>
     <dimen name="movie_poster_height">200dp</dimen>
+    <dimen name="movie_tile_height">250dp</dimen>
 
 </resources>

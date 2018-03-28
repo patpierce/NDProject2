@@ -2,12 +2,14 @@ package com.example.android.pjpopmovies1;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 /**
  * {@link MovieListRecyclerAdapter} exposes a list of movie items to a
@@ -23,7 +25,7 @@ public class MovieListRecyclerAdapter extends
      * An on-click handler defined for an Activity to interface with the RecyclerView
      */
     private final ListItemClickListener mOnClickListener;
-    private String[] mMovieData;
+    private String[][] mMovieData;
     //    private static int viewHolderCount;
     private int mNumberItems;
 
@@ -78,9 +80,13 @@ public class MovieListRecyclerAdapter extends
      */
     @Override
     public void onBindViewHolder(MovieViewHolder holder, int position) {
-        String movieItem = mMovieData[position];
-        Log.d(TAG, "#" + position);
-//        holder.bind(position);
+        String movieItem = mMovieData[position][0];
+        String posterBaseUrl = "https://image.tmdb.org/t/p/w185/";
+        String poster_url = posterBaseUrl + mMovieData[position][1];
+//        Log.d(TAG, "title: " + movieItem);
+//        Log.d(TAG, "posterurl" + poster_url);
+        Context context = holder.mPosterImageView.getContext();
+        Picasso.with(context).load(poster_url).into(holder.mPosterImageView);
         holder.mMovieTextView.setText(movieItem);
     }
 
@@ -93,13 +99,13 @@ public class MovieListRecyclerAdapter extends
     @Override
     public int getItemCount() {
         if (null == mMovieData) return 0;
-        return mNumberItems;
+        return mMovieData.length;
     }
 
     /**
      * @param movieData Position of the item in the list
      */
-    public void setMovieData(String[] movieData) {
+    public void setMovieData(String[][] movieData) {
         mMovieData = movieData;
         notifyDataSetChanged();
     }
@@ -118,7 +124,7 @@ public class MovieListRecyclerAdapter extends
             implements OnClickListener {
 
         public final TextView mMovieTextView;
-
+        public final ImageView mPosterImageView;
         /**
          * Constructor for our ViewHolder. Within this constructor, we get a reference to our
          * TextViews and set an onClickListener to listen for clicks. Those will be handled in the
@@ -130,6 +136,7 @@ public class MovieListRecyclerAdapter extends
         public MovieViewHolder(View itemView) {
             super(itemView);
 
+            mPosterImageView = itemView.findViewById(R.id.iv_movie_poster);
             mMovieTextView = itemView.findViewById(R.id.tv_movie_title);
 //            listItemNumberView = (TextView) itemView.findViewById(R.id.tv_movie_title);
 //            viewHolderIndex = (TextView) itemView.findViewById(R.id.tv_view_holder_instance);

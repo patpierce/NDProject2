@@ -50,31 +50,58 @@ public class MainActivity extends AppCompatActivity
         Resources resources = getResources();
         Configuration config = resources.getConfiguration();
         DisplayMetrics dm = resources.getDisplayMetrics();
-        int itemWidth = (int) (getResources().getDimension(R.dimen.movie_poster_width) / getResources().getDisplayMetrics().density);
+        float dens = getResources().getDisplayMetrics().density;
         // Note, screenHeightDp isn't reliable
         // (it seems to be too small by the height of the status bar),
         // but we assume screenWidthDp is reliable.
-        int screenWidth = config.screenWidthDp;
-//        int screenHeight = config.screenHeightDp;
-        int numberOfColumns = screenWidth / itemWidth + 1;
-        int movieItemMargin = 0;
-        while (movieItemMargin < 6) {
-            numberOfColumns = numberOfColumns - 1;
-            movieItemMargin = (screenWidth - (itemWidth * numberOfColumns)) / ((numberOfColumns + 1) * 2);
+        int screenWidthPx = (int) (config.screenWidthDp * dens);
+//        int screenHeight = (int) (config.screenHeightDp * dens);
+        int itemWidthPx = (int) (getResources().getDimension(R.dimen.movie_poster_width));
+        int minMarginWidthPx = (int) (6 * dens);
+        // to get minColumnWidthPx, add poster size (itemWidthPx) from dimens file
+        // to minMarginWidthPx of 6dp (*2 because left and right margins)
+        int minColumnWidthPx = (int) (itemWidthPx + (2 * minMarginWidthPx));
+        int numberOfColumns = screenWidthPx / minColumnWidthPx + 1;
+        int movieItemMarginPx = 0;
+
+        Log.d(TAG, "dens: " + dens);
+        Log.d(TAG, "itemWidthPx: " + itemWidthPx);
+        Log.d(TAG, "screenWidthPx: " + screenWidthPx);
+        Log.d(TAG, "minMarginWidthPx: " + minMarginWidthPx);
+        Log.d(TAG, "minItemWidthPx: " + minColumnWidthPx);
+
+        while (movieItemMarginPx < 6) {
+            Log.d(TAG, "numberOfColumns: " + numberOfColumns);
+            Log.d(TAG, "movieItemMarginPx: " + movieItemMarginPx);
+
+            numberOfColumns--;
+            movieItemMarginPx = (screenWidthPx - (itemWidthPx * numberOfColumns)) / ((numberOfColumns) * 2);
+            Log.d(TAG, "numberOfColumns: " + numberOfColumns);
+            Log.d(TAG, "movieItemMarginPx: " + movieItemMarginPx);
+
         }
-        Log.d(TAG, "margin:" + movieItemMargin);
+        int vMarginInPx = (int) (12 * dens);
+
+        Log.d(TAG, "dens: " + dens);
+        Log.d(TAG, "itemWidthPx: " + itemWidthPx);
+        Log.d(TAG, "screenWidthPx: " + screenWidthPx);
+        Log.d(TAG, "minColumnWidthPx: " + minColumnWidthPx);
+        Log.d(TAG, "numberOfColumns: " + numberOfColumns);
+        Log.d(TAG, "movieItemMarginPx: " + movieItemMarginPx);
+        Log.d(TAG, "vMarginInPx: " + vMarginInPx);
+
         /*
          * Using findViewById, we get a reference to our RecyclerView from xml. This allows us to
          * do things like set the adapter of the RecyclerView and toggle the visibility.
          */
-        mMoviesListRecView = findViewById(R.id.rv_numbers);
+        mMoviesListRecView = findViewById(R.id.rv_posters);
 
         /* This TextView is used to display errors and will be hidden if there are no errors */
         mErrorMessageDisplay = findViewById(R.id.tv_error_message_display);
         // Set margins on recycle view elements to spread out the gaps evenly
         ViewGroup.MarginLayoutParams marginLayoutParams =
                 (ViewGroup.MarginLayoutParams) mMoviesListRecView.getLayoutParams();
-        marginLayoutParams.setMargins(movieItemMargin, 12, movieItemMargin, 12);
+        marginLayoutParams.setMargins(movieItemMarginPx, vMarginInPx, movieItemMarginPx, vMarginInPx);
         mMoviesListRecView.setLayoutParams(marginLayoutParams);
 
         GridLayoutManager layoutManager = new GridLayoutManager(this, numberOfColumns);
@@ -107,7 +134,8 @@ public class MainActivity extends AppCompatActivity
     private void loadMoviesData() {
         showMoviesDataView();
 
-        String sortMethod = "popular";
+//        String sortMethod = "popular";
+        String sortMethod = "top_rated";
 //        String sortMethod = AppPreferences.getPreferredSortMethod(this);
         new FetchMoviesTask().execute(sortMethod);
     }
@@ -180,7 +208,7 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public class FetchMoviesTask extends AsyncTask<String, Void, String[]> {
+    public class FetchMoviesTask extends AsyncTask<String, Void, String[][]> {
 
         @Override
         protected void onPreExecute() {
@@ -189,7 +217,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         @Override
-        protected String[] doInBackground(String... params) {
+        protected String[][] doInBackground(String... params) {
 
             String apiKey = getString(R.string.APIKEY);
             String sortMethod = params[0];
@@ -199,7 +227,7 @@ public class MainActivity extends AppCompatActivity
                 String jsonMovieResponse = NetworkUtils
                         .getResponseFromHttpUrl(MoviesRequestUrl);
 //                Log.d(TAG, "jsonMovieResponse:" + jsonMovieResponse);
-                String[] JsonMovieData = MovieJsonUtils
+                String[][] JsonMovieData = MovieJsonUtils
                         .getMovieStringsFromJson(MainActivity.this, jsonMovieResponse);
 
                 return JsonMovieData;
@@ -211,7 +239,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         @Override
-        protected void onPostExecute(String[] moviesData) {
+        protected void onPostExecute(String[][] moviesData) {
             mLoadingIndicator.setVisibility(View.INVISIBLE);
             if (moviesData != null) {
                 Log.d(TAG, "in post execute, moviesData not eq null:");

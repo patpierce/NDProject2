@@ -5,7 +5,7 @@
     android:layout_height="match_parent">
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/rv_numbers"
+        android:id="@+id/rv_posters"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
@@ -20,8 +20,8 @@
 
     <ProgressBar
         android:id="@+id/pb_loading_indicator"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
         android:layout_gravity="center"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"

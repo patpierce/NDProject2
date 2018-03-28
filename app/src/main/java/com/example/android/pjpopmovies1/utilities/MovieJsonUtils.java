@@ -28,19 +28,22 @@ public class MovieJsonUtils {
      * @return Array of Strings describing movie data
      * @throws JSONException If JSON data cannot be properly parsed
      */
-    public static String[] getMovieStringsFromJson(Context context, String movieJsonStr)
+    public static String[][] getMovieStringsFromJson(Context context, String movieJsonStr)
             throws JSONException {
 
-        /* Movie information. Each movie's info is an element of the "results" array */
+        // In TMDB's returned json data, each movie's info is an element of the "results" array
         final String TMBD_LIST = "results";
 
-        final String TMBD_TITLE = "title";
 //        final String TMBD_ID = "id";
+        // keynames used in TMDB's json data
+        final String TMBD_TITLE = "title";
         final String TMBD_POSTER = "poster_path";
+        final String TMBD_OVERVIEW = "overview";
+        final String TMBD_RATING = "vote_average";
         final String TMBD_MESSAGE_CODE = "cod";
 
-        /* String array to hold each movie's String */
-        String[] parsedMovieData = null;
+
+//        String[][] parsedMovieData = null;
 
         JSONObject movieJson = new JSONObject(movieJsonStr);
 
@@ -62,51 +65,29 @@ public class MovieJsonUtils {
 
         JSONArray movieArray = movieJson.getJSONArray(TMBD_LIST);
 
-        parsedMovieData = new String[movieArray.length()];
-
-//        long localDate = System.currentTimeMillis();
-//        long utcDate = SunshineDateUtils.getUTCDateFromLocal(localDate);
-//        long startDay = SunshineDateUtils.normalizeDate(utcDate);
+        /* Two dimensional String array to hold each movie's parsed attributes */
+        String parsedMovieData[][];
+        parsedMovieData = new String[movieArray.length()][4];
 
         for (int i = 0; i < movieArray.length(); i++) {
             String title;
             String posterUrl;
-//            String highAndLow;
-//
-//            /* These are the values that will be collected */
-//            long dateTimeMillis;
-//            double high;
-//            double low;
-//            String description;
+            String plotOverview;
+            String rating;
 
-            /* Get the JSON object representing the day */
+            /* Get the JSON object representing the individual movie */
             JSONObject movieObject = movieArray.getJSONObject(i);
 
-            /*
-             * We ignore all the datetime values embedded in the JSON and assume that
-             * the values are returned in-order by day (which is not guaranteed to be correct).
-             */
-//            dateTimeMillis = startDay + SunshineDateUtils.DAY_IN_MILLIS * i;
-//            date = SunshineDateUtils.getFriendlyDateString(context, dateTimeMillis, false);
-
-            /*
-             * Description is in a child array called "movie", which is 1 element long.
-             * That element also contains a movie code.
-             */
-//            JSONObject movieObject =
-//                    dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
             title = movieObject.getString(TMBD_TITLE);
-
-            /*
-             * Temperatures are sent by Open Weather Map in a child object called "temp".
-             *
-             * Editor's Note: Try not to name variables "temp" when working with temperature.
-             * It confuses everybody. Temp could easily mean any number of things, including
-             * temperature, temporary and is just a bad variable name.
-             */
             posterUrl = movieObject.getString(TMBD_POSTER);
+            plotOverview = movieObject.getString(TMBD_OVERVIEW);
+            rating = movieObject.getString(TMBD_RATING);
+
             Log.v(TAG, "posterUrl:" + posterUrl);
-            parsedMovieData[i] = title + " - " + posterUrl;
+            parsedMovieData[i][0] = title;
+            parsedMovieData[i][1] = posterUrl;
+            parsedMovieData[i][2] = plotOverview;
+            parsedMovieData[i][3] = rating;
         }
 
         return parsedMovieData;
