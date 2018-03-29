@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected String[][] doInBackground(String... params) {
 
-            String apiKey = getString(R.string.APIKEY);
+            String apiKey = BuildConfig.TMDB_API_KEY;
             String sortMethod = params[0];
             URL MoviesRequestUrl = NetworkUtils.buildUrl(sortMethod, apiKey);
             try {

@@ -2,17 +2,20 @@
 <resources>
 
     <string-array name="sort_options">
-        <item>@string/pref_sort_label_now_playing</item>
-        <item>@string/pref_sort_label_popular</item>
-        <item>@string/pref_sort_label_top_rated</item>
-        <item>@string/pref_sort_label_upcoming</item>
+        <item>Now Playing</item>
+        <item>Popular</item>
+        <item>Top Rated</item>
+        <item>Upcoming</item>
     </string-array>
 
     <string-array name="sort_options_values">
-        <item>@string/pref_sort_now_playing</item>
-        <item>@string/pref_sort_popular</item>
-        <item>@string/pref_sort_top_rated</item>
-        <item>@string/pref_sort_upcoming</item>
+        <item>now_playing</item>
+        <item>popular</item>
+        <item>top_rated</item>
+        <item>upcoming</item>
     </string-array>
+
+
+
 
 </resources>
