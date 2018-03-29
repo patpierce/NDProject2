@@ -8,6 +8,8 @@ import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceScreen;
 
+// The code here was from the example app Sunshine from the class.
+
 /**
  * The SettingsFragment serves as the display for all of the user's settings.
  */

@@ -18,6 +18,7 @@
     <string name="pref_sort_label">Option</string>
     <string name="pref_sort_key">sort</string>
 
+    <string name="tmdblogo">Logo - Powered by The Movie DB tmdb.org</string>
     <string name="movie_grid_poster_desc">Poster for movie in grid view</string>
     <string name="movie_detail_poster_desc">Poster for movie in detail view</string>
 
