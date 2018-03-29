@@ -1,7 +1,6 @@
 package com.example.android.pjpopmovies1.utilities;
 
 import android.content.Context;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -9,13 +8,7 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 
-/**
- * Created by pp2731 on 3/25/2018.
- */
-
 public class MovieJsonUtils {
-
-    private static final String TAG = MovieJsonUtils.class.getSimpleName();
 
     /**
      * This method parses JSON from a web response and returns an 2d array of Strings
@@ -77,7 +70,6 @@ public class MovieJsonUtils {
             plotOverview = movieObject.getString(TMBD_OVERVIEW);
             rating = movieObject.getString(TMBD_RATING);
 
-            Log.v(TAG, "posterUrl:" + posterUrl);
             parsedMovieData[i][0] = title;
             parsedMovieData[i][1] = posterUrl;
             parsedMovieData[i][2] = plotOverview;
@@ -86,17 +78,4 @@ public class MovieJsonUtils {
 
         return parsedMovieData;
     }
-
-//    /**
-//     * Parse the JSON and convert it into ContentValues that can be inserted into our database.
-//     *
-//     * @param context         An application context, such as a service or activity context.
-//     * @param movieJsonStr The JSON to parse into ContentValues.
-//     *
-//     * @return An array of ContentValues parsed from the JSON.
-//     */
-//    public static ContentValues[] getFullMovieDataFromJson(Context context, String movieJsonStr) {
-//        return null;
-//    }
-
 }

@@ -3,7 +3,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/ll_movie_layout"
-    android:layout_width="@dimen/movie_poster_width"
+    android:layout_width="@dimen/movie_tile_width"
     android:layout_height="@dimen/movie_tile_height"
     android:layout_marginBottom="12dp"
     android:layout_marginTop="12dp"
@@ -14,16 +14,18 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/movie_poster_height"
         android:layout_gravity="top"
+        android:contentDescription="@string/movie_grid_poster_desc"
         android:scaleType="centerCrop" />
 
     <TextView
         android:id="@+id/tv_movie_title"
         style="@style/TextAppearance.AppCompat.Title.Inverse"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="@dimen/movie_title_height"
         android:background="@color/colorPrimary"
         android:gravity="center_vertical"
-        android:textSize="14dp"
+        android:padding="4dp"
+        android:textSize="14sp"
         tools:text="42" />
 
 </LinearLayout>

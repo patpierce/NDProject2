@@ -1,14 +1,16 @@
 package com.example.android.pjpopmovies1;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -16,7 +18,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.android.pjpopmovies1.MovieListRecyclerAdapter.ListItemClickListener;
 import com.example.android.pjpopmovies1.utilities.MovieJsonUtils;
@@ -24,20 +25,13 @@ import com.example.android.pjpopmovies1.utilities.NetworkUtils;
 
 import java.net.URL;
 
-//import com.example.android.pjpopmovies1.data.MovieAppPreferences;
-
 // Implement MovieListRecyclerAdapter.ListItemClickListener from the MainActivity
 public class MainActivity extends AppCompatActivity
-        implements ListItemClickListener {
+        implements ListItemClickListener,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
-    //    private static final int NUM_LIST_ITEMS = 100;
-    private static final String TAG = MainActivity.class.getSimpleName();
     private MovieListRecyclerAdapter mAdapter;
     private RecyclerView mMoviesListRecView;
-    private Toast mToast;
-    /* Create a Toast mToast to store the current Toast,
-     * so we can cancel it if its still on screen if we get a new Toast.
-     */
     private TextView mErrorMessageDisplay;
     private ProgressBar mLoadingIndicator;
 //    private String apiKey = getString(R.string.APIKEY);
@@ -49,14 +43,13 @@ public class MainActivity extends AppCompatActivity
 
         Resources resources = getResources();
         Configuration config = resources.getConfiguration();
-        DisplayMetrics dm = resources.getDisplayMetrics();
         float dens = getResources().getDisplayMetrics().density;
         // Note, screenHeightDp isn't reliable
         // (it seems to be too small by the height of the status bar),
         // but we assume screenWidthDp is reliable.
         int screenWidthPx = (int) (config.screenWidthDp * dens);
 //        int screenHeight = (int) (config.screenHeightDp * dens);
-        int itemWidthPx = (int) (getResources().getDimension(R.dimen.movie_poster_width));
+        int itemWidthPx = (int) (getResources().getDimension(R.dimen.movie_tile_width));
         // to get minColumnWidthPx, add poster size (itemWidthPx) from dimens file
         // to minMarginWidthPx of 6dp (*2 because left and right margins)
         int minMarginWidthPx = (int) (6 * dens);
@@ -64,31 +57,13 @@ public class MainActivity extends AppCompatActivity
         int numberOfColumns = (screenWidthPx / minColumnWidthPx) + 1;
         int movieItemMarginPx = 0;
 
-//        Log.d(TAG, "dens: " + dens);
-//        Log.d(TAG, "itemWidthPx: " + itemWidthPx);
-//        Log.d(TAG, "screenWidthPx: " + screenWidthPx);
-//        Log.d(TAG, "minMarginWidthPx: " + minMarginWidthPx);
-//        Log.d(TAG, "minItemWidthPx: " + minColumnWidthPx);
-
         while (movieItemMarginPx < minMarginWidthPx) {
-//            Log.d(TAG, "numberOfColumns: " + numberOfColumns);
-//            Log.d(TAG, "movieItemMarginPx: " + movieItemMarginPx);
 
             numberOfColumns--;
             movieItemMarginPx = (screenWidthPx - (itemWidthPx * numberOfColumns)) / ((numberOfColumns) * 2);
-            Log.d(TAG, "numberOfColumns: " + numberOfColumns);
-            Log.d(TAG, "movieItemMarginPx: " + movieItemMarginPx);
 
         }
         int vMarginInPx = (int) (12 * dens);
-
-        Log.d(TAG, "dens: " + dens);
-        Log.d(TAG, "itemWidthPx: " + itemWidthPx);
-        Log.d(TAG, "screenWidthPx: " + screenWidthPx);
-        Log.d(TAG, "minColumnWidthPx: " + minColumnWidthPx);
-        Log.d(TAG, "numberOfColumns: " + numberOfColumns);
-        Log.d(TAG, "movieItemMarginPx: " + movieItemMarginPx);
-        Log.d(TAG, "vMarginInPx: " + vMarginInPx);
 
         /*
          * Using findViewById, we get a reference to our RecyclerView from xml. This allows us to
@@ -120,24 +95,45 @@ public class MainActivity extends AppCompatActivity
         mAdapter = new MovieListRecyclerAdapter(this);
         mMoviesListRecView.setAdapter(mAdapter);
 
-        // "progress bar" cirle
+        // "progress bar" circle
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
-        loadMoviesData();
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 
+        String savedPrefSortOder =
+                sharedPreferences.getString(getResources().getString(R.string.pref_sort_key),
+                        getResources().getString(R.string.pref_sort_default));
+        loadMoviesData(savedPrefSortOder);
+    }
+
+    // Updates the screen if the shared preferences change. This method is required when you make a
+    // class implement OnSharedPreferenceChangedListener
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(getString(R.string.pref_sort_key))) {
+            String savedPrefSortOder =
+                    sharedPreferences.getString(getResources().getString(R.string.pref_sort_key),
+                            getResources().getString(R.string.pref_sort_default));
+            loadMoviesData(savedPrefSortOder);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Unregister VisualizerActivity as an OnPreferenceChangedListener to avoid any memory leaks.
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this);
     }
 
     /**
-     * This method gets sort order from preferences,
-     * then gets the movie data in the background.
+     * This method gets the movie data in the background.
      */
-    private void loadMoviesData() {
+    private void loadMoviesData(String sortOrder) {
         showMoviesDataView();
-
-//        String sortMethod = "popular";
-        String sortMethod = "top_rated";
-//        String sortMethod = AppPreferences.getPreferredSortMethod(this);
-        new FetchMoviesTask().execute(sortMethod);
+        new FetchMoviesTask().execute(sortOrder);
     }
 
     // Override ListItemClickListener's onListItemClick method
@@ -148,37 +144,37 @@ public class MainActivity extends AppCompatActivity
      * <p>
      * This callback is invoked when you click on an item in the list.
      *
-     * @param clickedItemIndex Index in the list of the item that was clicked.
+     * @param movieInfo Index in the array of movie info for the item that was clicked.
      */
     @Override
-    public void onListItemClick(int clickedItemIndex) {
-        // First, cancel the Toast if it isn't null
-        /* so the new Toast shows immediately, instead of waiting
-         * for other pending Toasts.
-         */
-        if (mToast != null) {
-            mToast.cancel();
-        }
+    public void onListItemClick(String[] movieInfo) {
+        Context context = this;
+        String title = movieInfo[0];
+        String posterUrl = movieInfo[1];
+        String plotOverview = movieInfo[2];
+        String rating = movieInfo[3];
 
-        // Show a Toast when an item is clicked, displaying that item number that was clicked
-        String toastMessage = "Item #" + clickedItemIndex + " clicked.";
-        mToast = Toast.makeText(this, toastMessage, Toast.LENGTH_LONG);
-
-        mToast.show();
+        Class destinationClass = DetailActivity.class;
+        Intent intentToStartDetailActivity = new Intent(context, destinationClass);
+        intentToStartDetailActivity.putExtra(getString(R.string.TITLE), title);
+        intentToStartDetailActivity.putExtra(getString(R.string.POSTERURL), posterUrl);
+        intentToStartDetailActivity.putExtra(getString(R.string.PLOTOVERVIEW), plotOverview);
+        intentToStartDetailActivity.putExtra(getString(R.string.RATING), rating);
+        startActivity(intentToStartDetailActivity);
     }
 
     // Make the View for the movie data visible and hide the error message.
     private void showMoviesDataView() {
-        /* First, make sure the error is invisible */
+        /* hide the error message text view */
         mErrorMessageDisplay.setVisibility(View.INVISIBLE);
-        /* Then, make sure the weather data is visible */
+        /* show the movie data is recycler view */
         mMoviesListRecView.setVisibility(View.VISIBLE);
     }
 
     private void showErrorMessage() {
-        /* First, hide the currently visible data */
+        /* hide  the movie data is recycler view */
         mMoviesListRecView.setVisibility(View.INVISIBLE);
-        /* Then, show the error */
+        /* show the error message text view */
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 
@@ -200,8 +196,8 @@ public class MainActivity extends AppCompatActivity
         switch (itemId) {
             case R.id.action_sort:
                 // Pass in this as the ListItemClickListener to the MovieListRecyclerAdapter constructor
-                mAdapter = new MovieListRecyclerAdapter(this);
-                mMoviesListRecView.setAdapter(mAdapter);
+                Intent startSettingsActivity = new Intent(this, SettingsActivity.class);
+                startActivity(startSettingsActivity);
                 return true;
         }
 
@@ -222,11 +218,9 @@ public class MainActivity extends AppCompatActivity
             String apiKey = getString(R.string.APIKEY);
             String sortMethod = params[0];
             URL MoviesRequestUrl = NetworkUtils.buildUrl(sortMethod, apiKey);
-            Log.d(TAG, "MoviesRequestUrl:" + MoviesRequestUrl);
             try {
                 String jsonMovieResponse = NetworkUtils
                         .getResponseFromHttpUrl(MoviesRequestUrl);
-                Log.d(TAG, "jsonMovieResponse:" + jsonMovieResponse);
                 String[][] JsonMovieData = MovieJsonUtils
                         .getMovieStringsFromJson(MainActivity.this, jsonMovieResponse);
 
@@ -242,11 +236,9 @@ public class MainActivity extends AppCompatActivity
         protected void onPostExecute(String[][] moviesData) {
             mLoadingIndicator.setVisibility(View.INVISIBLE);
             if (moviesData != null) {
-                Log.d(TAG, "in post execute, moviesData not eq null");
                 showMoviesDataView();
                 mAdapter.setMovieData(moviesData);
             } else {
-                Log.d(TAG, "in post execute, moviesData is null");
                 showErrorMessage();
             }
         }

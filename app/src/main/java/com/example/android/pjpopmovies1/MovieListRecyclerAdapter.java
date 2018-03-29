@@ -19,15 +19,12 @@ public class MovieListRecyclerAdapter extends
         RecyclerView.Adapter<MovieListRecyclerAdapter.MovieViewHolder> {
 
     //TAG for log statements
-    private static final String TAG = MovieListRecyclerAdapter.class.getSimpleName();
     // Create a final private ListItemClickListener called mOnClickListener
     /*
      * An on-click handler defined for an Activity to interface with the RecyclerView
      */
     private final ListItemClickListener mOnClickListener;
     private String[][] mMovieData;
-    //    private static int viewHolderCount;
-    private int mNumberItems;
 
     /**
      * Constructor for MovieListRecyclerAdapter that accepts
@@ -79,6 +76,18 @@ public class MovieListRecyclerAdapter extends
     @Override
     public void onBindViewHolder(MovieViewHolder holder, int position) {
         String movieItem = mMovieData[position][0];
+        //    For Images:
+        //    URL constructed using 3 parts:
+        //            1) The base URL will look like: http://image.tmdb.org/t/p/.
+        //            2) Then you will need a ‘size’, which will be one of the following:
+        //            "w92", "w154", "w185", "w342", "w500", "w780", or "original".
+        //    For most phones we recommend using "w185".
+        //            3) And finally the poster path returned by the query,
+        //    in this case "/nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg"
+        //    Combining these three parts gives us a final url of
+        //        http://image.tmdb.org/t/p/w185//nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg
+        //    This is also explained explicitly in the API documentation for /configuration.
+        //    private static final String TMDB_IMG_BASE_URL = "http://image.tmdb.org/t/p/";
         String posterBaseUrl = "https://image.tmdb.org/t/p/w185/";
         String posterUrl = posterBaseUrl + mMovieData[position][1];
         Context context = holder.mPosterImageView.getContext();
@@ -110,7 +119,7 @@ public class MovieListRecyclerAdapter extends
      * The interface that receives onClick messages.
      */
     public interface ListItemClickListener {
-        void onListItemClick(int clickedItemIndex);
+        void onListItemClick(String[] movieInfo);
     }
 
     /**
@@ -121,6 +130,7 @@ public class MovieListRecyclerAdapter extends
 
         public final TextView mMovieTextView;
         public final ImageView mPosterImageView;
+
         /**
          * Constructor for our ViewHolder. Within this constructor, we get a reference to our
          * TextViews and set an onClickListener to listen for clicks. Those will be handled in the
@@ -149,8 +159,8 @@ public class MovieListRecyclerAdapter extends
         @Override
         public void onClick(View v) {
             int clickedPosition = getAdapterPosition();
-//            String[] movieInfo = mMovieData[clickedPosition];
-            mOnClickListener.onListItemClick(clickedPosition);
+            String[] movieInfo = mMovieData[clickedPosition];
+            mOnClickListener.onListItemClick(movieInfo);
         }
     }
 

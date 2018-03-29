@@ -1,6 +1,29 @@
 <resources>
+
     <string name="app_name">PJ Pop Movies1</string>
     <string name="action_sort">Sort</string>
     <string name="error_message">An error has occurred.</string>
     <string name="APIKEY">your-api-key-goes-here</string>
+
+    <string name="pref_sort_default">top_rated</string>
+
+    <string name="pref_sort_label_now_playing">Now Playing</string>
+    <string name="pref_sort_now_playing">now_playing</string>
+    <string name="pref_sort_label_popular">Popular</string>
+    <string name="pref_sort_popular">popular</string>
+    <string name="pref_sort_label_top_rated">Top Rated</string>
+    <string name="pref_sort_top_rated">top_rated</string>
+    <string name="pref_sort_label_upcoming">Upcoming</string>
+    <string name="pref_sort_upcoming">upcoming</string>
+    <string name="pref_sort_label">Option</string>
+    <string name="pref_sort_key">sort</string>
+
+    <string name="movie_grid_poster_desc">Poster for movie in grid view</string>
+    <string name="movie_detail_poster_desc">Poster for movie in detail view</string>
+
+    <string name="TITLE">TITLE</string>
+    <string name="POSTERURL">POSTERURL</string>
+    <string name="PLOTOVERVIEW">PLOTOVERVIEW</string>
+    <string name="RATING">RATING</string>
+
 </resources>
