@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -30,6 +31,8 @@ public class MainActivity extends AppCompatActivity
         implements ListItemClickListener,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
+
     private MovieListRecyclerAdapter mAdapter;
     private RecyclerView mMoviesListRecView;
     private TextView mErrorMessageDisplay;
@@ -47,8 +50,11 @@ public class MainActivity extends AppCompatActivity
         // Note, screenHeightDp isn't reliable
         // (it seems to be too small by the height of the status bar),
         // but we assume screenWidthDp is reliable.
-        int screenWidthPx = (int) (config.screenWidthDp * dens);
-//        int screenHeight = (int) (config.screenHeightDp * dens);
+        int screenWidthDp = config.screenWidthDp;
+        Log.d(TAG, "screenWidthDp: " + screenWidthDp);
+        int screenWidthPx = (int) (screenWidthDp * dens);
+        Log.d(TAG, "screenWidthPx: " + screenWidthPx);
+//        int screenHeightPx = (int) (config.screenHeightDp * dens);
         int itemWidthPx = (int) (getResources().getDimension(R.dimen.movie_tile_width));
         // to get minColumnWidthPx, add poster size (itemWidthPx) from dimens file
         // to minMarginWidthPx of 6dp (*2 because left and right margins)
@@ -149,17 +155,20 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onListItemClick(String[] movieInfo) {
         Context context = this;
-        String title = movieInfo[0];
-        String posterUrl = movieInfo[1];
-        String plotOverview = movieInfo[2];
-        String rating = movieInfo[3];
+        String movieId = movieInfo[0];
+        String title = movieInfo[1];
+        String posterUrl = movieInfo[2];
+        String plotOverview = movieInfo[3];
+        String rating = movieInfo[4];
+        String releaseDate = movieInfo[5];
 
         Class destinationClass = DetailActivity.class;
         Intent intentToStartDetailActivity = new Intent(context, destinationClass);
-        intentToStartDetailActivity.putExtra(getString(R.string.TITLE), title);
-        intentToStartDetailActivity.putExtra(getString(R.string.POSTERURL), posterUrl);
-        intentToStartDetailActivity.putExtra(getString(R.string.PLOTOVERVIEW), plotOverview);
-        intentToStartDetailActivity.putExtra(getString(R.string.RATING), rating);
+//        intentToStartDetailActivity.putExtra(getString(R.string.TITLE), title);
+//        intentToStartDetailActivity.putExtra(getString(R.string.POSTERURL), posterUrl);
+//        intentToStartDetailActivity.putExtra(getString(R.string.PLOTOVERVIEW), plotOverview);
+//        intentToStartDetailActivity.putExtra(getString(R.string.RATING), rating);
+        intent.putExtra("movieentry", new MovieEntry(movieId, title, posterUrl, plotOverview , rating, releaseDate));
         startActivity(intentToStartDetailActivity);
     }
 

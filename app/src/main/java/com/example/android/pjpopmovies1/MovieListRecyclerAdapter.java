@@ -75,7 +75,7 @@ public class MovieListRecyclerAdapter extends
      */
     @Override
     public void onBindViewHolder(MovieViewHolder holder, int position) {
-        String movieItem = mMovieData[position][0];
+        String movieItem = mMovieData[position][1];
         //    For Images:
         //    URL constructed using 3 parts:
         //            1) The base URL will look like: http://image.tmdb.org/t/p/.
@@ -89,7 +89,7 @@ public class MovieListRecyclerAdapter extends
         //    This is also explained explicitly in the API documentation for /configuration.
         //    private static final String TMDB_IMG_BASE_URL = "http://image.tmdb.org/t/p/";
         String posterBaseUrl = "https://image.tmdb.org/t/p/w185/";
-        String posterUrl = posterBaseUrl + mMovieData[position][1];
+        String posterUrl = posterBaseUrl + mMovieData[position][2];
         Context context = holder.mPosterImageView.getContext();
         Picasso.with(context).load(posterUrl).into(holder.mPosterImageView);
         holder.mMovieTextView.setText(movieItem);

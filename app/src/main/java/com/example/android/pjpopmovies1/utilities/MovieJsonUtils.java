@@ -25,10 +25,12 @@ public class MovieJsonUtils {
         final String TMBD_LIST = "results";
 
         // keynames used in TMDB's json data
+        final String TMBD_ID = "id";
         final String TMBD_TITLE = "title";
         final String TMBD_POSTER = "poster_path";
         final String TMBD_OVERVIEW = "overview";
         final String TMBD_RATING = "vote_average";
+        final String TMBD_DATE = "release_date";
         final String TMBD_MESSAGE_CODE = "cod";
 //        final String TMBD_ID = "id";
 
@@ -54,26 +56,32 @@ public class MovieJsonUtils {
 
         /* Two dimensional String array to hold each movie's parsed attributes */
         String parsedMovieData[][];
-        parsedMovieData = new String[movieArray.length()][4];
+        parsedMovieData = new String[movieArray.length()][6];
 
         for (int i = 0; i < movieArray.length(); i++) {
+            String movieId;
             String title;
             String posterUrl;
             String plotOverview;
             String rating;
+            String releaseDate;
 
             /* Get the JSON object representing the individual movie */
             JSONObject movieObject = movieArray.getJSONObject(i);
 
+            movieId = movieObject.getString(TMBD_ID);
             title = movieObject.getString(TMBD_TITLE);
             posterUrl = movieObject.getString(TMBD_POSTER);
             plotOverview = movieObject.getString(TMBD_OVERVIEW);
             rating = movieObject.getString(TMBD_RATING);
+            releaseDate = movieObject.getString(TMBD_DATE);
 
-            parsedMovieData[i][0] = title;
-            parsedMovieData[i][1] = posterUrl;
-            parsedMovieData[i][2] = plotOverview;
-            parsedMovieData[i][3] = rating;
+            parsedMovieData[i][0] = movieId;
+            parsedMovieData[i][1] = title;
+            parsedMovieData[i][2] = posterUrl;
+            parsedMovieData[i][3] = plotOverview;
+            parsedMovieData[i][4] = rating;
+            parsedMovieData[i][5] = releaseDate;
         }
 
         return parsedMovieData;

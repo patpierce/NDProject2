@@ -30,27 +30,29 @@ public class DetailActivity extends Activity {
         ImageView mDetailPosterView = findViewById(R.id.iv_detail_movie_poster);
         String posterBaseUrl = "https://image.tmdb.org/t/p/w342/";
         Context context = mDetailPosterView.getContext();
-
+        Bundle data = getIntent().getExtras();
         // Display the movie info that was passed from MainActivity
         if (intentThatStartedThisActivity != null) {
-            if (intentThatStartedThisActivity.hasExtra("TITLE")) {
-                mTitle = intentThatStartedThisActivity.getStringExtra("TITLE");
-                mDetailTitleView.setText(mTitle);
+            if (intentThatStartedThisActivity.hasExtra("movieentry")) {
+                MovieEntry movie = (MovieEntry) data.getParcelable("movieentry");
+                title = movie.readString();
+//                mTitle = intentThatStartedThisActivity.getStringExtra("TITLE");
+//                mDetailTitleView.setText(mTitle);
             }
-            if (intentThatStartedThisActivity.hasExtra("POSTERURL")) {
-                mPosterUrl = intentThatStartedThisActivity.getStringExtra("POSTERURL");
-                String posterUrl = posterBaseUrl + mPosterUrl;
-                Picasso.with(context).load(posterUrl).into(mDetailPosterView);
-            }
-            if (intentThatStartedThisActivity.hasExtra("PLOTOVERVIEW")) {
-                mPlot = intentThatStartedThisActivity.getStringExtra("PLOTOVERVIEW");
-                mDetailPlotView.setText(mPlot);
-            }
-            if (intentThatStartedThisActivity.hasExtra("RATING")) {
-                mRating = "Rating: " +
-                        intentThatStartedThisActivity.getStringExtra("RATING") + "/10";
-                mDetailRatingView.setText(mRating);
-            }
+//            if (intentThatStartedThisActivity.hasExtra("POSTERURL")) {
+//                mPosterUrl = intentThatStartedThisActivity.getStringExtra("POSTERURL");
+//                String posterUrl = posterBaseUrl + mPosterUrl;
+//                Picasso.with(context).load(posterUrl).into(mDetailPosterView);
+//            }
+//            if (intentThatStartedThisActivity.hasExtra("PLOTOVERVIEW")) {
+//                mPlot = intentThatStartedThisActivity.getStringExtra("PLOTOVERVIEW");
+//                mDetailPlotView.setText(mPlot);
+//            }
+//            if (intentThatStartedThisActivity.hasExtra("RATING")) {
+//                mRating = "Rating: " +
+//                        intentThatStartedThisActivity.getStringExtra("RATING") + "/10";
+//                mDetailRatingView.setText(mRating);
+//            }
         }
     }
 }
