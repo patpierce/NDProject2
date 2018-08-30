@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
@@ -21,7 +20,7 @@ public class ReviewListRecyclerAdapter extends
     /*
      * An on-click handler defined for an Activity to interface with the RecyclerView
      */
-    private final ListItemClickListener mOnClickListener;
+    private final ListItemClickListener mReviewOnClickListener;
     private String[][] mReviewData;
 
     /**
@@ -32,7 +31,7 @@ public class ReviewListRecyclerAdapter extends
      * @param listener Listener for list item clicks
      */
     public ReviewListRecyclerAdapter(ListItemClickListener listener) {
-        mOnClickListener = listener;
+        mReviewOnClickListener = listener;
     }
 
     /**
@@ -76,7 +75,7 @@ public class ReviewListRecyclerAdapter extends
         String reviewId = mReviewData[position][0];
         String author = mReviewData[position][1];
         String content = mReviewData[position][2];
-        String reviewUrl = mReviewData[position][3];
+//        String reviewUrl = mReviewData[position][3];
         holder.mReviewAuthorTextView.setText(author);
         holder.mReviewTextView.setText(content);
     }
@@ -146,7 +145,7 @@ public class ReviewListRecyclerAdapter extends
         public void onClick(View v) {
             int clickedPosition = getAdapterPosition();
             String[] reviewInfo = mReviewData[clickedPosition];
-            mOnClickListener.onListItemClick(reviewInfo);
+            mReviewOnClickListener.onListItemClick(reviewInfo);
         }
     }
 

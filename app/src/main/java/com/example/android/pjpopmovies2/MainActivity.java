@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +23,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.android.pjpopmovies2.MovieListRecyclerAdapter.ListItemClickListener;
+import com.example.android.pjpopmovies2.data.FavoritesContract;
+import com.example.android.pjpopmovies2.data.FavoritesDbHelper;
 import com.example.android.pjpopmovies2.utilities.MovieJsonUtils;
 import com.example.android.pjpopmovies2.utilities.NetworkUtils;
 
@@ -37,7 +41,8 @@ public class MainActivity extends AppCompatActivity
     private RecyclerView mMoviesListRecView;
     private TextView mErrorMessageDisplay;
     private ProgressBar mLoadingIndicator;
-//    private String apiKey = getString(R.string.APIKEY);
+
+    private SQLiteDatabase mDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +67,10 @@ public class MainActivity extends AppCompatActivity
         int minColumnWidthPx = itemWidthPx + (2 * minMarginWidthPx);
         int numberOfColumns = (screenWidthPx / minColumnWidthPx) + 1;
         int movieItemMarginPx = 0;
+//        Log.d(TAG, "itemWidthPx: " + itemWidthPx);
+//        Log.d(TAG, "minMarginWidthPx: " + minMarginWidthPx);
+//        Log.d(TAG, "minColumnWidthPx: " + minColumnWidthPx);
+//        Log.d(TAG, "numberOfColumns: " + numberOfColumns);
 
         while (movieItemMarginPx < minMarginWidthPx) {
 
@@ -70,6 +79,7 @@ public class MainActivity extends AppCompatActivity
 
         }
         int vMarginInPx = (int) (12 * dens);
+        Log.d(TAG, "movieItemMarginPx: " + movieItemMarginPx);
 
         /*
          * Using findViewById, we get a reference to our RecyclerView from xml. This allows us to
@@ -94,6 +104,9 @@ public class MainActivity extends AppCompatActivity
          */
         mMoviesListRecView.setHasFixedSize(true);
 
+        FavoritesDbHelper dbHelper = new FavoritesDbHelper(this);
+        mDb = dbHelper.getWritableDatabase();
+
         // Pass in this as the ListItemClickListener to the MovieListRecyclerAdapter constructor
         /*
          * The MovieListRecyclerAdapter is responsible for displaying each item in the list.
@@ -114,6 +127,24 @@ public class MainActivity extends AppCompatActivity
         loadMoviesData(savedPrefSortOder);
     }
 
+    /**
+     * Query the mDb and get all guests from the waitlist table
+     *
+     * @return Cursor containing the list of guests
+     */
+    private Cursor getFavoriteMovies() {
+        // query mDb passing in the table name and projection String [] order by COLUMN_MV_MOVIEID
+        return mDb.query(
+                FavoritesContract.FavoritesEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                FavoritesContract.FavoritesEntry.COLUMN_MV_MOVIEID
+        );
+    }
+
     // Updates the screen if the shared preferences change. This method is required when you make a
     // class implement OnSharedPreferenceChangedListener
     @Override
@@ -127,9 +158,22 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(this);
+//        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
+        String savedPrefSortOder =
+                sharedPreferences.getString(getResources().getString(R.string.pref_sort_key),
+                        getResources().getString(R.string.pref_sort_default));
+        loadMoviesData(savedPrefSortOder);
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Unregister VisualizerActivity as an OnPreferenceChangedListener to avoid any memory leaks.
+        // Unregister as an OnPreferenceChangedListener to avoid any memory leaks.
         PreferenceManager.getDefaultSharedPreferences(this)
                 .unregisterOnSharedPreferenceChangeListener(this);
     }
@@ -137,7 +181,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * This method gets the movie data in the background.
      */
-    private void loadMoviesData(String sortOrder) {
+    public void loadMoviesData(String sortOrder) {
         showMoviesDataView();
         new FetchMoviesTask().execute(sortOrder);
     }
@@ -161,7 +205,7 @@ public class MainActivity extends AppCompatActivity
         String movieId = movieInfo[0];
         String title = movieInfo[1];
         String posterUrl = movieInfo[2];
-        String plotOverview = movieInfo[3];
+        String synopsis = movieInfo[3];
         String rating = movieInfo[4];
         String releaseDate = movieInfo[5];
 
@@ -169,9 +213,9 @@ public class MainActivity extends AppCompatActivity
         Intent intentToStartDetailActivity = new Intent(context, destinationClass);
 //        intentToStartDetailActivity.putExtra(getString(R.string.TITLE), title);
 //        intentToStartDetailActivity.putExtra(getString(R.string.POSTERURL), posterUrl);
-//        intentToStartDetailActivity.putExtra(getString(R.string.PLOTOVERVIEW), plotOverview);
+//        intentToStartDetailActivity.putExtra(getString(R.string.SYNOPSIS), synopsis);
 //        intentToStartDetailActivity.putExtra(getString(R.string.RATING), rating);
-        intentToStartDetailActivity.putExtra("movieentry", new MovieEntry(movieId, title, posterUrl, plotOverview , rating, releaseDate));
+        intentToStartDetailActivity.putExtra("movieentry", new MovieEntry(movieId, title, posterUrl, synopsis , rating, releaseDate));
         startActivity(intentToStartDetailActivity);
     }
 
@@ -229,18 +273,64 @@ public class MainActivity extends AppCompatActivity
 
             String apiKey = BuildConfig.TMDB_API_KEY;
             String sortMethod = params[0];
-            URL MoviesRequestUrl = NetworkUtils.buildMainUrl(sortMethod, apiKey);
-            try {
-                String jsonMovieResponse = NetworkUtils
-                        .getResponseFromHttpUrl(MoviesRequestUrl);
-                String[][] JsonMovieData = MovieJsonUtils
-                        .getMovieStringsFromJson(MainActivity.this, jsonMovieResponse);
+            Log.d(TAG, "doInBackground: sortMethod " + sortMethod);
+            // IF THE SORT METHOD IS FAVORITES, GET INFO FROM DATABASE
+            if ("favorites".equals(sortMethod)) {
 
-                return JsonMovieData;
+                int cPos;
+                Cursor cursor = getFavoriteMovies();
+                if (cursor.getCount() > 0) { // If cursor has atleast one row
+                    String[][] dbMovieData = new String[cursor.getCount()][6]; // Dynamic string array
+                    Log.d(TAG, "doInBackground: cursor.getCount() " + cursor.getCount());
 
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
+                    cursor.moveToFirst();
+                    do { // always prefer do while loop while you deal with database
+                        cPos = cursor.getPosition();
+                        Log.d(TAG, "doInBackground: cPos " + cPos);
+                        dbMovieData[cPos][0] = cursor.getString(cursor.getColumnIndex("movieId"));
+                        Log.d(TAG, "doInBackground: dbMovieData[cPos][0] " + dbMovieData[cPos][0]);
+                        dbMovieData[cPos][1] = cursor.getString(cursor.getColumnIndex("title"));
+                        Log.d(TAG, "doInBackground: dbMovieData[cPos][1] " + dbMovieData[cPos][1]);
+                        dbMovieData[cPos][2] = cursor.getString(cursor.getColumnIndex("posterUrl"));
+                        Log.d(TAG, "doInBackground: dbMovieData[cPos][2] " + dbMovieData[cPos][2]);
+                        dbMovieData[cPos][3] = cursor.getString(cursor.getColumnIndex("synopsis"));
+                        Log.d(TAG, "doInBackground: dbMovieData[cPos][3] " + dbMovieData[cPos][3]);
+                        dbMovieData[cPos][4] = cursor.getString(cursor.getColumnIndex("rating"));
+                        Log.d(TAG, "doInBackground: dbMovieData[cPos][4] " + dbMovieData[cPos][4]);
+                        dbMovieData[cPos][5] = cursor.getString(cursor.getColumnIndex("releaseDate"));
+                        Log.d(TAG, "doInBackground: dbMovieData[cPos][5] " + dbMovieData[cPos][5]);
+                        cursor.moveToNext();
+                    } while (!cursor.isAfterLast());
+
+                    return dbMovieData;
+
+                } else {
+                    String[][] dbMovieData = new String[1][6]; // Dynamic string array
+
+                    Log.e("SQL Query Error", "Cursor has no data");
+                    dbMovieData[0][0] = null;
+                    dbMovieData[0][1] = "No Favorties in Database";
+                    dbMovieData[0][2] = null;
+                    dbMovieData[0][3] = "Use another sortlist and 'star' a favorite movie from its Details Screen";
+                    dbMovieData[0][4] = null;
+                    dbMovieData[0][5] = null;
+                    return dbMovieData;
+
+                }
+            } else {
+                URL MoviesRequestUrl = NetworkUtils.buildMainUrl(sortMethod, apiKey);
+                try {
+                    String jsonMovieResponse = NetworkUtils
+                            .getResponseFromHttpUrl(MoviesRequestUrl);
+                    String[][] JsonMovieData = MovieJsonUtils
+                            .getMovieStringsFromJson(MainActivity.this, jsonMovieResponse);
+
+                    return JsonMovieData;
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
             }
         }
 

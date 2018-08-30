@@ -63,7 +63,7 @@ public class MovieJsonUtils {
             String movieId;
             String title;
             String posterUrl;
-            String plotOverview;
+            String synopsis;
             String rating;
             String releaseDate;
 
@@ -73,14 +73,14 @@ public class MovieJsonUtils {
             movieId = movieObject.getString(TMBD_ID);
             title = movieObject.getString(TMBD_TITLE);
             posterUrl = movieObject.getString(TMBD_POSTER);
-            plotOverview = movieObject.getString(TMBD_OVERVIEW);
+            synopsis = movieObject.getString(TMBD_OVERVIEW);
             rating = movieObject.getString(TMBD_RATING);
             releaseDate = movieObject.getString(TMBD_DATE);
 
             parsedMovieData[i][0] = movieId;
             parsedMovieData[i][1] = title;
             parsedMovieData[i][2] = posterUrl;
-            parsedMovieData[i][3] = plotOverview;
+            parsedMovieData[i][3] = synopsis;
             parsedMovieData[i][4] = rating;
             parsedMovieData[i][5] = releaseDate;
         }
@@ -150,5 +150,64 @@ public class MovieJsonUtils {
 
         }
         return parsedReviewData;
+    }
+
+    public static String[][] getVideoStringsFromJson(Context context, String videoJsonStr)
+            throws JSONException {
+
+        // In TMDB's returned json data, all info is an element of the "results" array
+        final String TMBD_LIST = "results";
+
+        // keynames used in TMDB's json data
+        final String TMBD_VIDEOKEY = "key";
+        final String TMBD_VIDEOTYPE = "type";
+        final String TMBD_VIDEONAME = "name";
+        final String TMBD_MESSAGE_CODE = "cod";
+
+        JSONObject videoJson = new JSONObject(videoJsonStr);
+
+        /* Is there an error? */
+        if (videoJson.has(TMBD_MESSAGE_CODE)) {
+            int errorCode = videoJson.getInt(TMBD_MESSAGE_CODE);
+
+            switch (errorCode) {
+                case HttpURLConnection.HTTP_OK:
+                    break;
+                case HttpURLConnection.HTTP_NOT_FOUND:
+                    /* Location invalid */
+                    return null;
+                default:
+                    /* Server probably down */
+                    return null;
+            }
+        }
+
+        JSONArray videoArray = videoJson.getJSONArray(TMBD_LIST);
+
+        /* Two dimensional String array to hold each video's parsed attributes */
+        String parsedVideoData[][];
+        parsedVideoData = new String[videoArray.length()][3];
+
+        for (int i = 0; i < videoArray.length(); i++) {
+            String ytVideoKey;
+            String type;
+            String title;
+
+            /* Get the JSON object representing the individual video */
+            JSONObject videoObject = videoArray.getJSONObject(i);
+            ytVideoKey = videoObject.getString(TMBD_VIDEOKEY);
+            type = videoObject.getString(TMBD_VIDEOTYPE);
+            title = videoObject.getString(TMBD_VIDEONAME);
+
+            parsedVideoData[i][0] = ytVideoKey;
+            parsedVideoData[i][1] = type;
+            parsedVideoData[i][2] = title;
+
+            Log.d(TAG, "getVideoStringsFromJson: id 0 " + parsedVideoData[i][0]);
+            Log.d(TAG, "getVideoStringsFromJson: au 1 " + parsedVideoData[i][1]);
+            Log.d(TAG, "getVideoStringsFromJson: cn 2 " + parsedVideoData[i][2]);
+
+        }
+        return parsedVideoData;
     }
 }

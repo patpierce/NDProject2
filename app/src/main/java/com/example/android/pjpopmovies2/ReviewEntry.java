@@ -3,93 +3,72 @@ package com.example.android.pjpopmovies2;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class MovieEntry implements Parcelable {
+public class ReviewEntry implements Parcelable {
 
-    public static final Creator<MovieEntry> CREATOR = new Creator<MovieEntry>() {
+    public static final Creator<ReviewEntry> CREATOR = new Creator<ReviewEntry>() {
         @Override
-        public MovieEntry createFromParcel(Parcel in) {
-            return new MovieEntry(in);
+        public ReviewEntry createFromParcel(Parcel in) {
+            return new ReviewEntry(in);
         }
 
         @Override
-        public MovieEntry[] newArray(int size) {
-            return new MovieEntry[size];
+        public ReviewEntry[] newArray(int size) {
+            return new ReviewEntry[size];
         }
     };
 
-    private String movieId;
-    private String title;
-    private String posterUrl;
-    private String plotOverview;
-    private String rating;
-    private String releaseDate;
+    private String reviewId;
+    private String author;
+    private String content;
+    private String url;
 
     // Constructor
-    public MovieEntry(String movieId, String title, String posterUrl, String plotOverview, String rating, String releaseDate) {
-        this.movieId = movieId;
-        this.title = title;
-        this.posterUrl = posterUrl;
-        this.plotOverview = plotOverview;
-        this.rating = rating;
-        this.releaseDate = releaseDate;
+    public ReviewEntry(String reviewId, String author, String content, String url) {
+        this.reviewId = reviewId;
+        this.author = author;
+        this.content = content;
+        this.url = url;
+
     }
 
     public String getId() {
-        return movieId;
+        return reviewId;
     }
 
     public void setId(String movieId) {
-        this.movieId = movieId;
+        this.reviewId = reviewId;
     }
 
-    public String getTitle() {
-        return title;
+    public String getAuthor() {
+        return author;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setAuthor(String author) {
+        this.author = author;
     }
 
-    public String getPoster() {
-        return posterUrl;
+    public String getContent() {
+        return content;
     }
 
-    public void setPoster(String posterUrl) {
-        this.posterUrl = posterUrl;
+    public void setContent(String content) {
+        this.content = content;
     }
 
-    public String getPlot() {
-        return plotOverview;
+    public String getUrl() {
+        return url;
     }
 
-    public void setPlot(String plotOverview) {
-        this.plotOverview = plotOverview;
-    }
-
-    public String getRating() {
-        return rating;
-    }
-
-    public void setRating(String rating) {
-        this.rating = rating;
-    }
-
-    public String getReleaseDate() {
-        return releaseDate;
-    }
-
-    public void setReleaseDate(String releaseDate) {
-        this.releaseDate = releaseDate;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     // Parcelling part
-    protected MovieEntry(Parcel in) {
-        this.movieId = in.readString();
-        this.title = in.readString();
-        this.posterUrl = in.readString();
-        this.plotOverview = in.readString();
-        this.rating = in.readString();
-        this.releaseDate = in.readString();
+    protected ReviewEntry(Parcel in) {
+        this.reviewId = in.readString();
+        this.author = in.readString();
+        this.content = in.readString();
+        this.url = in.readString();
 
     }
 
@@ -100,23 +79,19 @@ public class MovieEntry implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this.movieId);
-        dest.writeString(this.title);
-        dest.writeString(this.posterUrl);
-        dest.writeString(this.plotOverview);
-        dest.writeString(this.rating);
-        dest.writeString(this.releaseDate);
+        dest.writeString(this.reviewId);
+        dest.writeString(this.author);
+        dest.writeString(this.content);
+        dest.writeString(this.url);
     }
 
     @Override
     public String toString() {
-        return "MovieEntry{" +
-                "movieId='" + movieId + '\'' +
-                ", title='" + title + '\'' +
-                ", posterUrl='" + posterUrl + '\'' +
-                ", plotOverview='" + plotOverview + '\'' +
-                ", rating='" + rating + '\'' +
-                ", releaseDate='" + releaseDate + '\'' +
+        return "ReviewEntry{" +
+                "reviewId='" + reviewId + '\'' +
+                ", author='" + author + '\'' +
+                ", content='" + content + '\'' +
+                ", url='" + url + '\'' +
                 '}';
     }
 }

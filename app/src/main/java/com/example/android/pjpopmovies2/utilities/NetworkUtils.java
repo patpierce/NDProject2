@@ -16,8 +16,8 @@ public final class NetworkUtils {
     //    URL parameter like so: http://api.themoviedb.org/3/movie/popular?api_key=[YOUR_API_KEY]
     private static final String TMDB_BASE_URL = "https://api.themoviedb.org/3/movie/";
     private static final String API_KEY_PARAM = "api_key";
-    private static final String REVIEW_PARAM = "reviews";
-    private static final String TRAILER_PARAM = "trailers";
+    private static final String REVIEWS_PARAM = "reviews";
+    private static final String VIDEOS_PARAM = "videos";
 
     public static URL buildMainUrl(String sortOrder, String apiKey) {
         Uri builtUri = Uri.parse(TMDB_BASE_URL).buildUpon()
@@ -38,7 +38,24 @@ public final class NetworkUtils {
     public static URL buildReviewsUrl(String movieID, String apiKey) {
         Uri builtUri = Uri.parse(TMDB_BASE_URL).buildUpon()
                 .appendPath(movieID)
-                .appendPath(REVIEW_PARAM)
+                .appendPath(REVIEWS_PARAM)
+                .appendQueryParameter(API_KEY_PARAM, apiKey)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return url;
+    }
+
+    public static URL buildVideosUrl(String movieID, String apiKey) {
+        Uri builtUri = Uri.parse(TMDB_BASE_URL).buildUpon()
+                .appendPath(movieID)
+                .appendPath(VIDEOS_PARAM)
                 .appendQueryParameter(API_KEY_PARAM, apiKey)
                 .build();
 

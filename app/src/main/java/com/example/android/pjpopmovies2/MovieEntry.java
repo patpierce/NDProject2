@@ -20,16 +20,17 @@ public class MovieEntry implements Parcelable {
     private String movieId;
     private String title;
     private String posterUrl;
-    private String plotOverview;
+    private String synopsis;
     private String rating;
     private String releaseDate;
 
     // Constructor
-    public MovieEntry(String movieId, String title, String posterUrl, String plotOverview, String rating, String releaseDate) {
+    public MovieEntry(String movieId, String title, String posterUrl,
+                      String synopsis, String rating, String releaseDate) {
         this.movieId = movieId;
         this.title = title;
         this.posterUrl = posterUrl;
-        this.plotOverview = plotOverview;
+        this.synopsis = synopsis;
         this.rating = rating;
         this.releaseDate = releaseDate;
     }
@@ -58,12 +59,12 @@ public class MovieEntry implements Parcelable {
         this.posterUrl = posterUrl;
     }
 
-    public String getPlot() {
-        return plotOverview;
+    public String getSynopsis() {
+        return synopsis;
     }
 
-    public void setPlot(String plotOverview) {
-        this.plotOverview = plotOverview;
+    public void setSynopsis(String synopsis) {
+        this.synopsis = synopsis;
     }
 
     public String getRating() {
@@ -87,7 +88,7 @@ public class MovieEntry implements Parcelable {
         this.movieId = in.readString();
         this.title = in.readString();
         this.posterUrl = in.readString();
-        this.plotOverview = in.readString();
+        this.synopsis = in.readString();
         this.rating = in.readString();
         this.releaseDate = in.readString();
 
@@ -103,7 +104,7 @@ public class MovieEntry implements Parcelable {
         dest.writeString(this.movieId);
         dest.writeString(this.title);
         dest.writeString(this.posterUrl);
-        dest.writeString(this.plotOverview);
+        dest.writeString(this.synopsis);
         dest.writeString(this.rating);
         dest.writeString(this.releaseDate);
     }
@@ -114,7 +115,7 @@ public class MovieEntry implements Parcelable {
                 "movieId='" + movieId + '\'' +
                 ", title='" + title + '\'' +
                 ", posterUrl='" + posterUrl + '\'' +
-                ", plotOverview='" + plotOverview + '\'' +
+                ", synopsis='" + synopsis + '\'' +
                 ", rating='" + rating + '\'' +
                 ", releaseDate='" + releaseDate + '\'' +
                 '}';
