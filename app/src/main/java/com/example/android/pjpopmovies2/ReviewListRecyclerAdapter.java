@@ -72,7 +72,7 @@ public class ReviewListRecyclerAdapter extends
      */
     @Override
     public void onBindViewHolder(ReviewViewHolder holder, int position) {
-        String reviewId = mReviewData[position][0];
+//        String reviewId = mReviewData[position][0];
         String author = mReviewData[position][1];
         String content = mReviewData[position][2];
 //        String reviewUrl = mReviewData[position][3];
@@ -113,8 +113,8 @@ public class ReviewListRecyclerAdapter extends
     public class ReviewViewHolder extends RecyclerView.ViewHolder
             implements OnClickListener {
 
-        public final TextView mReviewAuthorTextView;
-        public final TextView mReviewTextView;
+        private final TextView mReviewAuthorTextView;
+        private final TextView mReviewTextView;
 
         /**
          * Constructor for our ViewHolder. Within this constructor, we get a reference to our
@@ -124,7 +124,7 @@ public class ReviewListRecyclerAdapter extends
          * @param itemView The View that you inflated in
          *                 {@link ReviewListRecyclerAdapter#onCreateViewHolder(ViewGroup, int)}
          */
-        public ReviewViewHolder(View itemView) {
+        private ReviewViewHolder(View itemView) {
             super(itemView);
 
             mReviewAuthorTextView = itemView.findViewById(R.id.tv_review_author);

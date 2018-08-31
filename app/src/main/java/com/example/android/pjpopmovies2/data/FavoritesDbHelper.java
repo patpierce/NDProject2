@@ -20,35 +20,30 @@ public class FavoritesDbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         // Create an String that will create the favorites table
         final String SQL_CREATE_FAVORITES_TABLE = "CREATE TABLE " + FavoritesEntry.TABLE_NAME + " (" +
-                FavoritesEntry._ID + " INTEGER," +
+                FavoritesEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 FavoritesEntry.COLUMN_MV_MOVIEID + " TEXT NOT NULL, " +
                 FavoritesEntry.COLUMN_MV_TITLE + " TEXT NOT NULL, " +
                 FavoritesEntry.COLUMN_MV_POSTERURL + ", " +
                 FavoritesEntry.COLUMN_MV_SYNOPSIS + ", " +
                 FavoritesEntry.COLUMN_MV_RATING + ", " +
-                FavoritesEntry.COLUMN_MV_RELEASEDATE + ", " +
-                "PRIMARY KEY (" + FavoritesEntry.COLUMN_MV_MOVIEID +  ")" +
+                FavoritesEntry.COLUMN_MV_RELEASEDATE +
                 "); ";
         // Create an String that will create the reviews table
         final String SQL_CREATE_REVIEWS_TABLE = "CREATE TABLE " + ReviewsEntry.TABLE_NAME + " (" +
-                ReviewsEntry._ID + " INTEGER," +
+                ReviewsEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 ReviewsEntry.COLUMN_RV_MOVIEID + " TEXT NOT NULL, " +
                 ReviewsEntry.COLUMN_RV_REVIEWID + " TEXT NOT NULL, " +
                 ReviewsEntry.COLUMN_RV_AUTHOR + " TEXT NOT NULL, " +
                 ReviewsEntry.COLUMN_RV_CONTENT + " TEXT NOT NULL, " +
-                ReviewsEntry.COLUMN_RV_URL + ", " +
-                "PRIMARY KEY (" +
-                ReviewsEntry.COLUMN_RV_MOVIEID + ", " + ReviewsEntry.COLUMN_RV_REVIEWID + ")" +
+                ReviewsEntry.COLUMN_RV_URL +
                 "); ";
         // Create String that will create the videos table
         final String SQL_CREATE_VIDEOS_TABLE = "CREATE TABLE " + VideosEntry.TABLE_NAME + " (" +
-                VideosEntry._ID + " INTEGER," +
+                VideosEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 VideosEntry.COLUMN_VD_MOVIEID + " TEXT NOT NULL, " +
                 VideosEntry.COLUMN_VD_YTVIDEOKEY + " TEXT NOT NULL, " +
                 VideosEntry.COLUMN_VD_TYPE + ", " +
-                VideosEntry.COLUMN_VD_TITLE + ", " +
-                "PRIMARY KEY (" +
-                VideosEntry.COLUMN_VD_MOVIEID + ", " + VideosEntry.COLUMN_VD_YTVIDEOKEY + ")" +
+                VideosEntry.COLUMN_VD_TITLE +
                 "); ";
         // Execute the query by calling execSQL on sqLiteDatabase
         //  and pass the string query SQL_CREATE_FAVORITES_TABLE
@@ -65,4 +60,14 @@ public class FavoritesDbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + VideosEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
+
+    @Override
+    public void onDowngrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
+        // drop table,  then re-create
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + FavoritesEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + ReviewsEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + VideosEntry.TABLE_NAME);
+        onCreate(sqLiteDatabase);
+    }
+
 }

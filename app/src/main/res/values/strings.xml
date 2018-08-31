@@ -2,7 +2,7 @@
 
     <string name="app_name">PJ Pop Movies2</string>
     <string name="action_sort">Sort</string>
-    <string name="error_message">An error has occurred.</string>
+    <string name="error_message">Cannot load list of movies. If you have Favorites saved locally, you may switch to Favorites view to view them offline.</string>
 
     <string name="pref_sort_label">Option</string>
     <string name="pref_sort_key">sort</string>

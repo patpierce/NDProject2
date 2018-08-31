@@ -1,7 +1,7 @@
 package com.example.android.pjpopmovies2.utilities;
 
 import android.content.Context;
-import android.util.Log;
+//import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -10,7 +10,7 @@ import org.json.JSONObject;
 import java.net.HttpURLConnection;
 
 public class MovieJsonUtils {
-    private static final String TAG = MovieJsonUtils.class.getSimpleName();
+//    private static final String TAG = MovieJsonUtils.class.getSimpleName();
 
     /**
      * This method parses JSON from a web response and returns an 2d array of Strings
@@ -143,10 +143,10 @@ public class MovieJsonUtils {
             parsedReviewData[i][2] = content;
             parsedReviewData[i][3] = url;
 
-            Log.d(TAG, "getReviewStringsFromJson: id " + parsedReviewData[i][0]);
-            Log.d(TAG, "getReviewStringsFromJson: au " + parsedReviewData[i][1]);
-            Log.d(TAG, "getReviewStringsFromJson: cn " + parsedReviewData[i][2]);
-            Log.d(TAG, "getReviewStringsFromJson: ur " + parsedReviewData[i][3]);
+//            Log.d(TAG, "getReviewStringsFromJson: id " + parsedReviewData[i][0]);
+//            Log.d(TAG, "getReviewStringsFromJson: au " + parsedReviewData[i][1]);
+//            Log.d(TAG, "getReviewStringsFromJson: cn " + parsedReviewData[i][2]);
+//            Log.d(TAG, "getReviewStringsFromJson: ur " + parsedReviewData[i][3]);
 
         }
         return parsedReviewData;
@@ -203,9 +203,9 @@ public class MovieJsonUtils {
             parsedVideoData[i][1] = type;
             parsedVideoData[i][2] = title;
 
-            Log.d(TAG, "getVideoStringsFromJson: id 0 " + parsedVideoData[i][0]);
-            Log.d(TAG, "getVideoStringsFromJson: au 1 " + parsedVideoData[i][1]);
-            Log.d(TAG, "getVideoStringsFromJson: cn 2 " + parsedVideoData[i][2]);
+//            Log.d(TAG, "getVideoStringsFromJson: id 0 " + parsedVideoData[i][0]);
+//            Log.d(TAG, "getVideoStringsFromJson: au 1 " + parsedVideoData[i][1]);
+//            Log.d(TAG, "getVideoStringsFromJson: cn 2 " + parsedVideoData[i][2]);
 
         }
         return parsedVideoData;

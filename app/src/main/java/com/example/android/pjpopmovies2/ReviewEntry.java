@@ -35,7 +35,7 @@ public class ReviewEntry implements Parcelable {
         return reviewId;
     }
 
-    public void setId(String movieId) {
+    public void setId(String reviewId) {
         this.reviewId = reviewId;
     }
 
@@ -64,7 +64,7 @@ public class ReviewEntry implements Parcelable {
     }
 
     // Parcelling part
-    protected ReviewEntry(Parcel in) {
+    private ReviewEntry(Parcel in) {
         this.reviewId = in.readString();
         this.author = in.readString();
         this.content = in.readString();

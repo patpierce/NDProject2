@@ -2,7 +2,7 @@ package com.example.android.pjpopmovies2;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+//import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 /**
  * {@link VideoListRecyclerAdapter} exposes a list of video items to a
@@ -20,7 +20,7 @@ public class VideoListRecyclerAdapter extends
         RecyclerView.Adapter<VideoListRecyclerAdapter.VideoViewHolder> {
 
     //TAG for log statements
-    private static final String TAG = VideoListRecyclerAdapter.class.getSimpleName();
+//    private static final String TAG = VideoListRecyclerAdapter.class.getSimpleName();
 
     // Create a final private ListItemClickListener called mOnClickListener
     /*
@@ -83,9 +83,9 @@ public class VideoListRecyclerAdapter extends
         String ytVideoUrl = ytVideoBaseUrl + mVideoData[position][0] + ytVideoUrlEnd;
         String type = mVideoData[position][1];
         String title = mVideoData[position][2];
-        Log.d(TAG, "onBindViewHolder: " + ytVideoUrl);
+//        Log.d(TAG, "onBindViewHolder: " + ytVideoUrl);
         Context context = holder.mThumbnailImageView.getContext();
-        Picasso.with(context).load(ytVideoUrl).into(holder.mThumbnailImageView);
+        Glide.with(context).load(ytVideoUrl).into(holder.mThumbnailImageView);
         holder.mVideoTypeTextView.setText(type);
         holder.mVideoTitleTextView.setText(title);
     }
@@ -123,9 +123,9 @@ public class VideoListRecyclerAdapter extends
     public class VideoViewHolder extends RecyclerView.ViewHolder
             implements OnClickListener {
 
-        public final TextView mVideoTypeTextView;
-        public final TextView mVideoTitleTextView;
-        public final ImageView mThumbnailImageView;
+        private final TextView mVideoTypeTextView;
+        private final TextView mVideoTitleTextView;
+        private final ImageView mThumbnailImageView;
 
         /**
          * Constructor for our ViewHolder. Within this constructor, we get a reference to our
@@ -135,7 +135,7 @@ public class VideoListRecyclerAdapter extends
          * @param itemView The View that you inflated in
          *                 {@link VideoListRecyclerAdapter#onCreateViewHolder(ViewGroup, int)}
          */
-        public VideoViewHolder(View itemView) {
+        private VideoViewHolder(View itemView) {
             super(itemView);
 
             mVideoTypeTextView = itemView.findViewById(R.id.tv_video_type);

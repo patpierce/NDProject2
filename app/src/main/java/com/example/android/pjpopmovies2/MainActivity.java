@@ -30,6 +30,7 @@ import com.example.android.pjpopmovies2.utilities.NetworkUtils;
 
 import java.net.URL;
 
+
 // Implement MovieListRecyclerAdapter.ListItemClickListener from the MainActivity
 public class MainActivity extends AppCompatActivity
         implements ListItemClickListener,
@@ -43,6 +44,12 @@ public class MainActivity extends AppCompatActivity
     private ProgressBar mLoadingIndicator;
 
     private SQLiteDatabase mDb;
+
+//    public static Picasso picassoWithCache;
+//    File httpCacheDirectory = new File(getCacheDir(), "picasso-cache");
+//    Cache cache = new Cache(httpCacheDirectory, 15 * 1024 * 1024);
+//    OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder().cache(cache);
+//    picassoWithCache = new Picasso.Builder(this).downloader(new OkHttp3Downloader(okHttpClientBuilder.build())).build();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +86,7 @@ public class MainActivity extends AppCompatActivity
 
         }
         int vMarginInPx = (int) (12 * dens);
-        Log.d(TAG, "movieItemMarginPx: " + movieItemMarginPx);
+//        Log.d(TAG, "movieItemMarginPx: " + movieItemMarginPx);
 
         /*
          * Using findViewById, we get a reference to our RecyclerView from xml. This allows us to
@@ -128,9 +135,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * Query the mDb and get all guests from the waitlist table
-     *
-     * @return Cursor containing the list of guests
+     * Query the mDb
+     * @return Cursor containing the list of favorite moview
      */
     private Cursor getFavoriteMovies() {
         // query mDb passing in the table name and projection String [] order by COLUMN_MV_MOVIEID
@@ -181,7 +187,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * This method gets the movie data in the background.
      */
-    public void loadMoviesData(String sortOrder) {
+    private void loadMoviesData(String sortOrder) {
         showMoviesDataView();
         new FetchMoviesTask().execute(sortOrder);
     }
@@ -211,10 +217,6 @@ public class MainActivity extends AppCompatActivity
 
         Class destinationClass = DetailActivity.class;
         Intent intentToStartDetailActivity = new Intent(context, destinationClass);
-//        intentToStartDetailActivity.putExtra(getString(R.string.TITLE), title);
-//        intentToStartDetailActivity.putExtra(getString(R.string.POSTERURL), posterUrl);
-//        intentToStartDetailActivity.putExtra(getString(R.string.SYNOPSIS), synopsis);
-//        intentToStartDetailActivity.putExtra(getString(R.string.RATING), rating);
         intentToStartDetailActivity.putExtra("movieentry", new MovieEntry(movieId, title, posterUrl, synopsis , rating, releaseDate));
         startActivity(intentToStartDetailActivity);
     }
@@ -260,7 +262,7 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public class FetchMoviesTask extends AsyncTask<String, Void, String[][]> {
+    private class FetchMoviesTask extends AsyncTask<String, Void, String[][]> {
 
         @Override
         protected void onPreExecute() {
@@ -273,48 +275,48 @@ public class MainActivity extends AppCompatActivity
 
             String apiKey = BuildConfig.TMDB_API_KEY;
             String sortMethod = params[0];
-            Log.d(TAG, "doInBackground: sortMethod " + sortMethod);
+//            Log.d(TAG, "doInBackground: sortMethod " + sortMethod);
             // IF THE SORT METHOD IS FAVORITES, GET INFO FROM DATABASE
             if ("favorites".equals(sortMethod)) {
 
                 int cPos;
                 Cursor cursor = getFavoriteMovies();
                 if (cursor.getCount() > 0) { // If cursor has atleast one row
-                    String[][] dbMovieData = new String[cursor.getCount()][6]; // Dynamic string array
-                    Log.d(TAG, "doInBackground: cursor.getCount() " + cursor.getCount());
+                    String[][] dbMoviesData = new String[cursor.getCount()][6];
+//                    Log.d(TAG, "doInBackground: cursor.getCount() " + cursor.getCount());
 
                     cursor.moveToFirst();
                     do { // always prefer do while loop while you deal with database
                         cPos = cursor.getPosition();
-                        Log.d(TAG, "doInBackground: cPos " + cPos);
-                        dbMovieData[cPos][0] = cursor.getString(cursor.getColumnIndex("movieId"));
-                        Log.d(TAG, "doInBackground: dbMovieData[cPos][0] " + dbMovieData[cPos][0]);
-                        dbMovieData[cPos][1] = cursor.getString(cursor.getColumnIndex("title"));
-                        Log.d(TAG, "doInBackground: dbMovieData[cPos][1] " + dbMovieData[cPos][1]);
-                        dbMovieData[cPos][2] = cursor.getString(cursor.getColumnIndex("posterUrl"));
-                        Log.d(TAG, "doInBackground: dbMovieData[cPos][2] " + dbMovieData[cPos][2]);
-                        dbMovieData[cPos][3] = cursor.getString(cursor.getColumnIndex("synopsis"));
-                        Log.d(TAG, "doInBackground: dbMovieData[cPos][3] " + dbMovieData[cPos][3]);
-                        dbMovieData[cPos][4] = cursor.getString(cursor.getColumnIndex("rating"));
-                        Log.d(TAG, "doInBackground: dbMovieData[cPos][4] " + dbMovieData[cPos][4]);
-                        dbMovieData[cPos][5] = cursor.getString(cursor.getColumnIndex("releaseDate"));
-                        Log.d(TAG, "doInBackground: dbMovieData[cPos][5] " + dbMovieData[cPos][5]);
+//                        Log.d(TAG, "doInBackground: cPos " + cPos);
+                        dbMoviesData[cPos][0] = cursor.getString(cursor.getColumnIndex("movieId"));
+//                        Log.d(TAG, "doInBackground: dbMovieData[cPos][0] " + dbMoviesData[cPos][0]);
+                        dbMoviesData[cPos][1] = cursor.getString(cursor.getColumnIndex("title"));
+//                        Log.d(TAG, "doInBackground: dbMovieData[cPos][1] " + dbMoviesData[cPos][1]);
+                        dbMoviesData[cPos][2] = cursor.getString(cursor.getColumnIndex("posterUrl"));
+//                        Log.d(TAG, "doInBackground: dbMovieData[cPos][2] " + dbMoviesData[cPos][2]);
+                        dbMoviesData[cPos][3] = cursor.getString(cursor.getColumnIndex("synopsis"));
+//                        Log.d(TAG, "doInBackground: dbMovieData[cPos][3] " + dbMoviesData[cPos][3]);
+                        dbMoviesData[cPos][4] = cursor.getString(cursor.getColumnIndex("rating"));
+//                        Log.d(TAG, "doInBackground: dbMovieData[cPos][4] " + dbMoviesData[cPos][4]);
+                        dbMoviesData[cPos][5] = cursor.getString(cursor.getColumnIndex("releaseDate"));
+//                        Log.d(TAG, "doInBackground: dbMovieData[cPos][5] " + dbMoviesData[cPos][5]);
                         cursor.moveToNext();
                     } while (!cursor.isAfterLast());
 
-                    return dbMovieData;
+                    return dbMoviesData;
 
                 } else {
-                    String[][] dbMovieData = new String[1][6]; // Dynamic string array
+                    String[][] phMoviesData = new String[1][6]; // Dynamic string array
 
-                    Log.e("SQL Query Error", "Cursor has no data");
-                    dbMovieData[0][0] = null;
-                    dbMovieData[0][1] = "No Favorties in Database";
-                    dbMovieData[0][2] = null;
-                    dbMovieData[0][3] = "Use another sortlist and 'star' a favorite movie from its Details Screen";
-                    dbMovieData[0][4] = null;
-                    dbMovieData[0][5] = null;
-                    return dbMovieData;
+//                    Log.e("SQL Query Error", "Cursor has no data");
+                    phMoviesData[0][0] = null;
+                    phMoviesData[0][1] = "No Favorties in Database";
+                    phMoviesData[0][2] = null;
+                    phMoviesData[0][3] = "Use another sortlist and 'star' a favorite movie from its Details Screen";
+                    phMoviesData[0][4] = null;
+                    phMoviesData[0][5] = null;
+                    return phMoviesData;
 
                 }
             } else {
@@ -322,10 +324,10 @@ public class MainActivity extends AppCompatActivity
                 try {
                     String jsonMovieResponse = NetworkUtils
                             .getResponseFromHttpUrl(MoviesRequestUrl);
-                    String[][] JsonMovieData = MovieJsonUtils
+                    String[][] JsonMoviesData = MovieJsonUtils
                             .getMovieStringsFromJson(MainActivity.this, jsonMovieResponse);
 
-                    return JsonMovieData;
+                    return JsonMoviesData;
 
                 } catch (Exception e) {
                     e.printStackTrace();

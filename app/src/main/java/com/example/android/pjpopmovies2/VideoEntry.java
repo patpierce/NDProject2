@@ -32,7 +32,7 @@ public class VideoEntry implements Parcelable {
         return YTVideoKey;
     }
 
-    public void setId(String movieId) {
+    public void setId(String YTVideoKey) {
         this.YTVideoKey = YTVideoKey;
     }
 
@@ -53,7 +53,7 @@ public class VideoEntry implements Parcelable {
     }
 
     // Parcelling part
-    protected VideoEntry(Parcel in) {
+    private VideoEntry(Parcel in) {
         this.YTVideoKey = in.readString();
         this.type = in.readString();
         this.title = in.readString();
@@ -75,7 +75,7 @@ public class VideoEntry implements Parcelable {
     public String toString() {
         return "VideoEntry{" +
                 "YTVideoKey='" + YTVideoKey + '\'' +
-                ", title='" + title + '\'' +
+                ", type='" + type + '\'' +
                 ", title='" + title + '\'' +
                 '}';
     }

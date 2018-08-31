@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 /**
  * {@link MovieListRecyclerAdapter} exposes a list of movie items to a
@@ -18,13 +18,10 @@ import com.squareup.picasso.Picasso;
 public class MovieListRecyclerAdapter extends
         RecyclerView.Adapter<MovieListRecyclerAdapter.MovieViewHolder> {
 
-    //TAG for log statements
-    // Create a final private ListItemClickListener called mOnClickListener
     /*
      * An on-click handler defined for an Activity to interface with the RecyclerView
      */
     private final ListItemClickListener mOnClickListener;
-    private String[][] mMovieData;
 
     /**
      * Constructor for MovieListRecyclerAdapter that accepts
@@ -36,6 +33,8 @@ public class MovieListRecyclerAdapter extends
     public MovieListRecyclerAdapter(ListItemClickListener listener) {
         mOnClickListener = listener;
     }
+
+    private String[][] mMovieData;
 
     /**
      * This gets called when each new ViewHolder is created. This happens when the RecyclerView
@@ -60,8 +59,6 @@ public class MovieListRecyclerAdapter extends
 
         return viewHolder;
     }
-
-    // Implement OnClickListener in the MovieViewHolder class
 
     /**
      * OnBindViewHolder is called by the RecyclerView to display the data at the specified
@@ -91,7 +88,7 @@ public class MovieListRecyclerAdapter extends
         String posterBaseUrl = "https://image.tmdb.org/t/p/w185/";
         String posterUrl = posterBaseUrl + mMovieData[position][2];
         Context context = holder.mPosterImageView.getContext();
-        Picasso.with(context).load(posterUrl).into(holder.mPosterImageView);
+        Glide.with(context).load(posterUrl).into(holder.mPosterImageView);
         holder.mMovieTextView.setText(movieItem);
     }
 
@@ -128,8 +125,8 @@ public class MovieListRecyclerAdapter extends
     public class MovieViewHolder extends RecyclerView.ViewHolder
             implements OnClickListener {
 
-        public final TextView mMovieTextView;
-        public final ImageView mPosterImageView;
+        private final TextView mMovieTextView;
+        private final ImageView mPosterImageView;
 
         /**
          * Constructor for our ViewHolder. Within this constructor, we get a reference to our
@@ -139,7 +136,7 @@ public class MovieListRecyclerAdapter extends
          * @param itemView The View that you inflated in
          *                 {@link MovieListRecyclerAdapter#onCreateViewHolder(ViewGroup, int)}
          */
-        public MovieViewHolder(View itemView) {
+        private MovieViewHolder(View itemView) {
             super(itemView);
 
             mPosterImageView = itemView.findViewById(R.id.iv_movie_poster);
