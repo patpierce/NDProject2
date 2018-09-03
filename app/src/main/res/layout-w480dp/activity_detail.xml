@@ -41,7 +41,6 @@
             style="@style/TextAppearance.AppCompat.Title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
             android:layout_marginTop="8dp"
             android:textAlignment="center"
             android:textSize="30sp"
@@ -60,8 +59,8 @@
             android:contentDescription="@string/movie_detail_poster_desc"
             android:scaleType="centerCrop"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_detail_title"
             app:layout_constraintBottom_toTopOf="@id/divider1" />
-        <!--app:layout_constraintTop_toBottomOf="@id/iv_tmdb_logo"-->
 
         <TextView
             android:id="@+id/tv_release_date"

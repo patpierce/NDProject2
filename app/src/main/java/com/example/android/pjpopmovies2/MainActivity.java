@@ -6,9 +6,9 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
@@ -24,12 +24,10 @@ import android.widget.TextView;
 
 import com.example.android.pjpopmovies2.MovieListRecyclerAdapter.ListItemClickListener;
 import com.example.android.pjpopmovies2.data.FavoritesContract;
-import com.example.android.pjpopmovies2.data.FavoritesDbHelper;
 import com.example.android.pjpopmovies2.utilities.MovieJsonUtils;
 import com.example.android.pjpopmovies2.utilities.NetworkUtils;
 
 import java.net.URL;
-
 
 // Implement MovieListRecyclerAdapter.ListItemClickListener from the MainActivity
 public class MainActivity extends AppCompatActivity
@@ -43,13 +41,9 @@ public class MainActivity extends AppCompatActivity
     private TextView mErrorMessageDisplay;
     private ProgressBar mLoadingIndicator;
 
-    private SQLiteDatabase mDb;
-
-//    public static Picasso picassoWithCache;
-//    File httpCacheDirectory = new File(getCacheDir(), "picasso-cache");
-//    Cache cache = new Cache(httpCacheDirectory, 15 * 1024 * 1024);
-//    OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder().cache(cache);
-//    picassoWithCache = new Picasso.Builder(this).downloader(new OkHttp3Downloader(okHttpClientBuilder.build())).build();
+    private Parcelable savedRecyclerLayoutState;
+    private GridLayoutManager layoutManager;
+    private static final String BUNDLE_RECYCLER_LAYOUT = "recycler_layout";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +96,7 @@ public class MainActivity extends AppCompatActivity
         marginLayoutParams.setMargins(movieItemMarginPx, vMarginInPx, movieItemMarginPx, vMarginInPx);
         mMoviesListRecView.setLayoutParams(marginLayoutParams);
 
-        GridLayoutManager layoutManager = new GridLayoutManager(this, numberOfColumns);
+        layoutManager = new GridLayoutManager(this, numberOfColumns);
         mMoviesListRecView.setLayoutManager(layoutManager);
 
         /*
@@ -110,9 +104,6 @@ public class MainActivity extends AppCompatActivity
          * change the child layout size in the RecyclerView
          */
         mMoviesListRecView.setHasFixedSize(true);
-
-        FavoritesDbHelper dbHelper = new FavoritesDbHelper(this);
-        mDb = dbHelper.getWritableDatabase();
 
         // Pass in this as the ListItemClickListener to the MovieListRecyclerAdapter constructor
         /*
@@ -131,23 +122,22 @@ public class MainActivity extends AppCompatActivity
         String savedPrefSortOder =
                 sharedPreferences.getString(getResources().getString(R.string.pref_sort_key),
                         getResources().getString(R.string.pref_sort_default));
+
         loadMoviesData(savedPrefSortOder);
     }
 
     /**
-     * Query the mDb
+     * Query the Content Provider
      * @return Cursor containing the list of favorite moview
      */
     private Cursor getFavoriteMovies() {
-        // query mDb passing in the table name and projection String [] order by COLUMN_MV_MOVIEID
-        return mDb.query(
-                FavoritesContract.FavoritesEntry.TABLE_NAME,
+        // query content provider for whole favorites table
+        return getContentResolver().query(
+                FavoritesContract.FavoritesEntry.CONTENT_URI,
                 null,
                 null,
                 null,
-                null,
-                null,
-                FavoritesContract.FavoritesEntry.COLUMN_MV_MOVIEID
+                null
         );
     }
 
@@ -164,12 +154,28 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(BUNDLE_RECYCLER_LAYOUT,
+                layoutManager.onSaveInstanceState());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        //restore recycler view at same position
+        if (savedInstanceState != null) {
+            savedRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_RECYCLER_LAYOUT);
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
+
         SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(this);
-//        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-
         String savedPrefSortOder =
                 sharedPreferences.getString(getResources().getString(R.string.pref_sort_key),
                         getResources().getString(R.string.pref_sort_default));
@@ -179,6 +185,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
         // Unregister as an OnPreferenceChangedListener to avoid any memory leaks.
         PreferenceManager.getDefaultSharedPreferences(this)
                 .unregisterOnSharedPreferenceChangeListener(this);
@@ -193,7 +200,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     // Override ListItemClickListener's onListItemClick method
-
     /**
      * This is where we receive our callback from
      * {@link com.example.android.pjpopmovies2.MovieListRecyclerAdapter.ListItemClickListener}
@@ -202,7 +208,6 @@ public class MainActivity extends AppCompatActivity
      *
      * @param movieInfo Index in the array of movie info for the item that was clicked.
      */
-
     @Override
     public void onListItemClick(String[] movieInfo) {
         Context context = this;
@@ -217,7 +222,8 @@ public class MainActivity extends AppCompatActivity
 
         Class destinationClass = DetailActivity.class;
         Intent intentToStartDetailActivity = new Intent(context, destinationClass);
-        intentToStartDetailActivity.putExtra("movieentry", new MovieEntry(movieId, title, posterUrl, synopsis , rating, releaseDate));
+        intentToStartDetailActivity.putExtra("movieentry",
+                new MovieEntry(movieId, title, posterUrl, synopsis , rating, releaseDate));
         startActivity(intentToStartDetailActivity);
     }
 
@@ -276,7 +282,7 @@ public class MainActivity extends AppCompatActivity
             String apiKey = BuildConfig.TMDB_API_KEY;
             String sortMethod = params[0];
 //            Log.d(TAG, "doInBackground: sortMethod " + sortMethod);
-            // IF THE SORT METHOD IS FAVORITES, GET INFO FROM DATABASE
+            // IF THE SORT METHOD IS FAVORITES, GET INFO FROM CONTENT PROVIDER
             if ("favorites".equals(sortMethod)) {
 
                 int cPos;
@@ -286,21 +292,21 @@ public class MainActivity extends AppCompatActivity
 //                    Log.d(TAG, "doInBackground: cursor.getCount() " + cursor.getCount());
 
                     cursor.moveToFirst();
-                    do { // always prefer do while loop while you deal with database
+                    do {
                         cPos = cursor.getPosition();
 //                        Log.d(TAG, "doInBackground: cPos " + cPos);
-                        dbMoviesData[cPos][0] = cursor.getString(cursor.getColumnIndex("movieId"));
 //                        Log.d(TAG, "doInBackground: dbMovieData[cPos][0] " + dbMoviesData[cPos][0]);
-                        dbMoviesData[cPos][1] = cursor.getString(cursor.getColumnIndex("title"));
 //                        Log.d(TAG, "doInBackground: dbMovieData[cPos][1] " + dbMoviesData[cPos][1]);
-                        dbMoviesData[cPos][2] = cursor.getString(cursor.getColumnIndex("posterUrl"));
 //                        Log.d(TAG, "doInBackground: dbMovieData[cPos][2] " + dbMoviesData[cPos][2]);
-                        dbMoviesData[cPos][3] = cursor.getString(cursor.getColumnIndex("synopsis"));
 //                        Log.d(TAG, "doInBackground: dbMovieData[cPos][3] " + dbMoviesData[cPos][3]);
-                        dbMoviesData[cPos][4] = cursor.getString(cursor.getColumnIndex("rating"));
 //                        Log.d(TAG, "doInBackground: dbMovieData[cPos][4] " + dbMoviesData[cPos][4]);
-                        dbMoviesData[cPos][5] = cursor.getString(cursor.getColumnIndex("releaseDate"));
 //                        Log.d(TAG, "doInBackground: dbMovieData[cPos][5] " + dbMoviesData[cPos][5]);
+                        dbMoviesData[cPos][0] = cursor.getString(cursor.getColumnIndex("movieId"));
+                        dbMoviesData[cPos][1] = cursor.getString(cursor.getColumnIndex("title"));
+                        dbMoviesData[cPos][2] = cursor.getString(cursor.getColumnIndex("posterUrl"));
+                        dbMoviesData[cPos][3] = cursor.getString(cursor.getColumnIndex("synopsis"));
+                        dbMoviesData[cPos][4] = cursor.getString(cursor.getColumnIndex("rating"));
+                        dbMoviesData[cPos][5] = cursor.getString(cursor.getColumnIndex("releaseDate"));
                         cursor.moveToNext();
                     } while (!cursor.isAfterLast());
 
@@ -309,14 +315,15 @@ public class MainActivity extends AppCompatActivity
                 } else {
                     String[][] phMoviesData = new String[1][6]; // Dynamic string array
 
-//                    Log.e("SQL Query Error", "Cursor has no data");
-                    phMoviesData[0][0] = null;
-                    phMoviesData[0][1] = "No Favorties in Database";
-                    phMoviesData[0][2] = null;
-                    phMoviesData[0][3] = "Use another sortlist and 'star' a favorite movie from its Details Screen";
-                    phMoviesData[0][4] = null;
-                    phMoviesData[0][5] = null;
-                    return phMoviesData;
+                    Log.e("FetchMovies: Content Provider", "Cursor has no data");
+//                    phMoviesData[0][0] = null;
+//                    phMoviesData[0][1] = getString(R.string.no_favorites_indb_message);
+//                    phMoviesData[0][2] = null;
+//                    phMoviesData[0][3] = getString(R.string.no_favs_placeholder_message);
+//                    phMoviesData[0][4] = null;
+//                    phMoviesData[0][5] = null;
+//                    return phMoviesData;
+                    return null;
 
                 }
             } else {
@@ -330,6 +337,7 @@ public class MainActivity extends AppCompatActivity
                     return JsonMoviesData;
 
                 } catch (Exception e) {
+                    Log.e("FetchMovies jsonfailed", "No results from MoviesRequestUrl" + MoviesRequestUrl);
                     e.printStackTrace();
                     return null;
                 }
@@ -344,6 +352,9 @@ public class MainActivity extends AppCompatActivity
                 mAdapter.setMovieData(moviesData);
             } else {
                 showErrorMessage();
+            }
+            if (savedRecyclerLayoutState!=null) {
+                layoutManager.onRestoreInstanceState(savedRecyclerLayoutState);
             }
         }
     }

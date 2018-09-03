@@ -88,7 +88,7 @@ public class MovieListRecyclerAdapter extends
         String posterBaseUrl = "https://image.tmdb.org/t/p/w185/";
         String posterUrl = posterBaseUrl + mMovieData[position][2];
         Context context = holder.mPosterImageView.getContext();
-        Glide.with(context).load(posterUrl).into(holder.mPosterImageView);
+        Glide.with(context).load(posterUrl).placeholder(R.drawable.placeholder).into(holder.mPosterImageView);
         holder.mMovieTextView.setText(movieItem);
     }
 

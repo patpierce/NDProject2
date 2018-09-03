@@ -2,7 +2,6 @@ package com.example.android.pjpopmovies2;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-//import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -85,7 +84,7 @@ public class VideoListRecyclerAdapter extends
         String title = mVideoData[position][2];
 //        Log.d(TAG, "onBindViewHolder: " + ytVideoUrl);
         Context context = holder.mThumbnailImageView.getContext();
-        Glide.with(context).load(ytVideoUrl).into(holder.mThumbnailImageView);
+        Glide.with(context).load(ytVideoUrl).placeholder(R.drawable.placeholder_video).into(holder.mThumbnailImageView);
         holder.mVideoTypeTextView.setText(type);
         holder.mVideoTitleTextView.setText(title);
     }

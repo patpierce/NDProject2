@@ -4,23 +4,22 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-//import android.util.Log;
+import android.util.Log;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.android.pjpopmovies2.ReviewListRecyclerAdapter.ListItemClickListener;
 import com.example.android.pjpopmovies2.data.FavoritesContract;
-import com.example.android.pjpopmovies2.data.FavoritesDbHelper;
 import com.example.android.pjpopmovies2.utilities.MovieJsonUtils;
 import com.example.android.pjpopmovies2.utilities.NetworkUtils;
 
@@ -29,15 +28,13 @@ import java.net.URL;
 public class DetailActivity extends AppCompatActivity
         implements ListItemClickListener {
 
-//    private static final String TAG = DetailActivity.class.getSimpleName();
+    private static final String TAG = DetailActivity.class.getSimpleName();
 
     private ReviewListRecyclerAdapter mReviewsAdapter;
     private RecyclerView mReviewsListRecView;
     private VideoListRecyclerAdapter mVideosAdapter;
     private RecyclerView mVideosListRecView;
 
-    private SQLiteDatabase mDb;
-    private final FavoritesDbHelper dbHelper = new FavoritesDbHelper(this);
     private Boolean favoriteMovie = false;
 
     private static String[][] reviewsData = null;
@@ -64,105 +61,91 @@ public class DetailActivity extends AppCompatActivity
         final String mRating;
         final String mReleaseDate;
 
-        String posterBaseUrl = "https://image.tmdb.org/t/p/w342/";
+        final String posterBaseUrl = "https://image.tmdb.org/t/p/w342/";
+        final String videoBaseUrl = "https://www.youtube.com/watch?v=";
         Bundle data = getIntent().getExtras();
 
-        // Display the movie info that was passed from MainActivity
         if (intentThatStartedThisActivity != null) {
             if (intentThatStartedThisActivity.hasExtra("movieentry")) {
                 MovieEntry movie = data.getParcelable("movieentry");
 
+                // Parse the movie info that was passed from MainActivity
                 mMovieId = movie.getId();
                 mTitle = movie.getTitle();
                 mPosterUrl = movie.getPoster();
                 String posterUrl = posterBaseUrl + mPosterUrl;
                 mSynopsis = movie.getSynopsis();
                 mRating = movie.getRating();
-                String ratingMessage = "Rating: " + mRating;
+                String ratingMessage = getString(R.string.ratings_message_prefix) + mRating;
                 mReleaseDate = movie.getReleaseDate();
 
+                // Display the movie info into various views
                 Glide.with(context).load(posterUrl).into(mDetailPosterView);
-
                 mDetailTitleView.setText(mTitle);
                 mDetailSynopsisView.setText(mSynopsis);
                 mDetailRatingView.setText(ratingMessage);
                 mDetailSynopsisView.setText(mSynopsis);
                 mReleaseDateView.setText(mReleaseDate);
 
-                mDb = dbHelper.getWritableDatabase();
-                Cursor fcursor = mDb.rawQuery(
-                        "SELECT * FROM favorites WHERE movieId ='" + mMovieId + "'", null);
-                if (fcursor.moveToFirst()) {
+                // If this movie is in favorites database, light up the star checkbox
+                String[] MovieId = {mMovieId}; //content provider needs array not just string
+                Cursor listedAsFavorite = getContentResolver().query(
+                        FavoritesContract.FavoritesEntry.CONTENT_URI,
+                        null,
+                        FavoritesContract.FavoritesEntry.COLUMN_MV_MOVIEID + "=?",
+                        MovieId,
+                        null
+                );
+
+                if (listedAsFavorite.moveToFirst()) {
                     mFavoriteStarView.setChecked(true);
                     favoriteMovie = true;
-//                    Log.d(TAG, "onCreate: fcursor in movetofirst");
                 }
-                fcursor.close();
 
+                // Setup RecyclerView for Reviews
                 /*
-                 * Using findViewById, we get a reference to our RecyclerView from xml. This allows us to
-                 * do things like set the adapter of the Recyc/lerView and toggle the visibility.
+                 * findViewById to get the RecyclerView id from xml
+                 * to set the adapter of the RecyclerView or toggle the visibility.
                  */
                 mReviewsListRecView = findViewById(R.id.rv_reviews);
                 LinearLayoutManager rlayoutManager = new LinearLayoutManager(this);
                 mReviewsListRecView.setLayoutManager(rlayoutManager);
-
-                /*
-                 * Use this setting to improve performance if you know that changes in content do not
-                 * change the child layout size in the RecyclerView
-                 */
                 mReviewsListRecView.setHasFixedSize(true);
-
-                // Pass in this as the ListItemClickListener to the ReviewListRecyclerAdapter constructor
-                /*
-                 * The ReviewListRecyclerAdapter is responsible for displaying each item in the list.
-                 */
                 mReviewsAdapter = new ReviewListRecyclerAdapter(this);
                 mReviewsListRecView.setAdapter(mReviewsAdapter);
 
                 loadReviewsData(mMovieId);
 
+                // Setup RecyclerView for Videos
                 /*
-                 * Using findViewById, we get a reference to our RecyclerView from xml. This allows us to
-                 * do things like set the adapter of the RecyclerView and toggle the visibility.
+                 * findViewById to get the RecyclerView id from xml
+                 * to set the adapter of the RecyclerView or toggle the visibility.
                  */
                 mVideosListRecView = findViewById(R.id.rv_videos);
                 LinearLayoutManager tlayoutManager = new LinearLayoutManager(this);
                 mVideosListRecView.setLayoutManager(tlayoutManager);
-
-                /*
-                 * Use this setting to improve performance if you know that changes in content do not
-                 * change the child layout size in the RecyclerView
-                 */
                 mVideosListRecView.setHasFixedSize(true);
-
-
-                // Pass in this as the ListItemClickListener to the MovieListRecyclerAdapter constructor
-                /*
-                 * The VideoListRecyclerAdapter is responsible for displaying each item in the list.
-                 */
                 mVideosAdapter = new VideoListRecyclerAdapter(
                         new VideoListRecyclerAdapter.ListItemClickListener() {
                             @Override
                             public void onListItemClick(String[] videoInfo) {
-                                openVideoUrl("https://www.youtube.com/watch?v=" + videoInfo[0]);
+                                openVideoUrl(videoBaseUrl + videoInfo[0]);
                             }
                         });
                 mVideosListRecView.setAdapter(mVideosAdapter);
 
                 loadVideosData(mMovieId);
 
+                // Setup checkbox listener for favorites star button
                 mFavoriteStarView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         if (isChecked) {
                             // if isChecked is true save info to database
-//                            Log.d(TAG, "onCheckedChanged: star isChecked " + isChecked);
                             addAsFavorite(mMovieId, mTitle, mPosterUrl,
                                     mSynopsis, mRating, mReleaseDate,
                                     reviewsData, videosData);
                         } else {
                             // if isChecked is false remove row from database
-//                            Log.d(TAG, "onCheckedChanged: star isChecked " + isChecked);
                             removeFavorite(mMovieId);
 
                         }
@@ -172,39 +155,31 @@ public class DetailActivity extends AppCompatActivity
         }
     }
 
-    /**
-     * Query the mDb
-     * @return Cursor containing the list of favorite moview
-     */
-    private Cursor getReviewsForFavoriteMovie(String movieId) {
-        // query mDb passing in the table name and projection String []
-        return mDb.query(
-                FavoritesContract.ReviewsEntry.TABLE_NAME,
-                null,
-                FavoritesContract.ReviewsEntry.COLUMN_RV_MOVIEID + "=" + movieId,
-                null,
-                null,
-                null,
-                null
-        );
-    }
+//    private Cursor getReviewsForFavoriteMovie(String movieId) {
+//        // query content provider for reviews table rows associated with the movieId
+//        Log.d(TAG, "getReviewsForFavoriteMovie: movieId " + movieId);
+//        return getContentResolver().query(
+//                FavoritesContract.ReviewsEntry.CONTENT_URI
+//                        .buildUpon().appendPath(movieId).build(),
+//                null,
+//                null,
+//                null,
+//                null
+//        );
+//    }
 
-    /**
-     * Query the mDb
-     * @return Cursor containing the list of favorite moview
-     */
-    private Cursor getVideosForFavoriteMovie(String movieId) {
-        // query mDb passing in the table name and projection String []
-        return mDb.query(
-                FavoritesContract.VideosEntry.TABLE_NAME,
-                null,
-                FavoritesContract.VideosEntry.COLUMN_VD_MOVIEID + "=" + movieId,
-                null,
-                null,
-                null,
-                null
-        );
-    }
+//    private Cursor getVideosForFavoriteMovie(String movieId) {
+//        // query content provider for videos table rows associated with the movieId
+//        Log.d(TAG, "getVideosForFavoriteMovie: movieId " + movieId);
+//        return getContentResolver().query(
+//                FavoritesContract.VideosEntry.CONTENT_URI
+//                        .buildUpon().appendPath(movieId).build(),
+//                null,
+//                null,
+//                null,
+//                null
+//        );
+//    }
 
     private void addAsFavorite(String movieID, String title, String posterUrl,
                                String synopsis, String rating, String releaseDate,
@@ -212,10 +187,8 @@ public class DetailActivity extends AppCompatActivity
 
         favoriteMovie = true;
 
+        // insert String params to 'favorites' table, one row per movieId
         ContentValues mcv = new ContentValues();
-        ContentValues rcv = new ContentValues();
-        ContentValues vcv = new ContentValues();
-
         mcv.put(FavoritesContract.FavoritesEntry.COLUMN_MV_MOVIEID, movieID);
         mcv.put(FavoritesContract.FavoritesEntry.COLUMN_MV_TITLE, title);
         mcv.put(FavoritesContract.FavoritesEntry.COLUMN_MV_POSTERURL, posterUrl);
@@ -223,55 +196,85 @@ public class DetailActivity extends AppCompatActivity
         mcv.put(FavoritesContract.FavoritesEntry.COLUMN_MV_RATING, rating);
         mcv.put(FavoritesContract.FavoritesEntry.COLUMN_MV_RELEASEDATE, releaseDate);
 
-        mDb.insert(FavoritesContract.FavoritesEntry.TABLE_NAME, null, mcv);
+        Uri uri = getContentResolver().insert(FavoritesContract.FavoritesEntry.CONTENT_URI, mcv);
+        if(uri != null) {
+//            Toast.makeText(getBaseContext(), uri.toString(), Toast.LENGTH_LONG).show();
+            Toast.makeText(getBaseContext(), "Favorite!", Toast.LENGTH_LONG).show();
+        }
 
-        if (reviews.length != 0) {
+        // insert 'reviews' Array param to 'reviews' table, one row per reviewId
+        ContentValues rcv = new ContentValues();
+        if (reviews.length > 0) {
             for (int i = 0; i < reviews.length; i++) {
-//                Log.d(TAG, "addAsFavorite: reviews row" + i);
+                Log.d(TAG, "addAsFavorite: reviews row " + i);
                 String reviewId = reviews[i][0];
+                Log.d(TAG, "addAsFavorite: reviewId  " + reviewId);
                 String author = reviews[i][1];
                 String content = reviews[i][2];
                 String url = reviews[i][3];
+                if(reviewId!=null){
+                    rcv.put(FavoritesContract.ReviewsEntry.COLUMN_RV_MOVIEID, movieID);
+                    rcv.put(FavoritesContract.ReviewsEntry.COLUMN_RV_REVIEWID, reviewId);
+                    rcv.put(FavoritesContract.ReviewsEntry.COLUMN_RV_AUTHOR, author);
+                    rcv.put(FavoritesContract.ReviewsEntry.COLUMN_RV_CONTENT, content);
+                    rcv.put(FavoritesContract.ReviewsEntry.COLUMN_RV_URL, url);
 
-                rcv.put(FavoritesContract.ReviewsEntry.COLUMN_RV_MOVIEID, movieID);
-                rcv.put(FavoritesContract.ReviewsEntry.COLUMN_RV_REVIEWID, reviewId);
-                rcv.put(FavoritesContract.ReviewsEntry.COLUMN_RV_AUTHOR, author);
-                rcv.put(FavoritesContract.ReviewsEntry.COLUMN_RV_CONTENT, content);
-                rcv.put(FavoritesContract.ReviewsEntry.COLUMN_RV_URL, url);
-//                Log.d(TAG, "addAsFavorite: " + i + ": " +reviews[i][1]);
-
-                mDb.insert(FavoritesContract.ReviewsEntry.TABLE_NAME, null, rcv);
-
+                    Uri ruri = getContentResolver().insert(FavoritesContract.ReviewsEntry.CONTENT_URI, rcv);
+                    if (ruri != null) {
+//                    Toast.makeText(getBaseContext(), ruri.toString(), Toast.LENGTH_LONG).show();
+                    }
+                }
             }
         }
-        if (videos.length != 0) {
+
+        // insert 'videos' Array param to 'videos' table, one row per ytVideoKey
+        ContentValues vcv = new ContentValues();
+        if (videos.length > 0) {
             for (int i = 0; i < videos.length; i++) {
-//                Log.d(TAG, "addAsFavorite: i " + i);
+                Log.d(TAG, "addAsFavorite: videos row " + i);
                 String ytVideoKey = videos[i][0];
+                Log.d(TAG, "addAsFavorite: ytVideoKey  " + ytVideoKey);
                 String vidtype = videos[i][1];
                 String vidtitle = videos[i][2];
+                if(ytVideoKey!=null) {
+                    vcv.put(FavoritesContract.VideosEntry.COLUMN_VD_MOVIEID, movieID);
+                    vcv.put(FavoritesContract.VideosEntry.COLUMN_VD_YTVIDEOKEY, ytVideoKey);
+                    vcv.put(FavoritesContract.VideosEntry.COLUMN_VD_TYPE, vidtype);
+                    vcv.put(FavoritesContract.VideosEntry.COLUMN_VD_TITLE, vidtitle);
 
-//                Log.d(TAG, "addAsFavorite: ytVideoKey " + ytVideoKey);
-
-                vcv.put(FavoritesContract.VideosEntry.COLUMN_VD_MOVIEID, movieID);
-                vcv.put(FavoritesContract.VideosEntry.COLUMN_VD_YTVIDEOKEY, ytVideoKey);
-                vcv.put(FavoritesContract.VideosEntry.COLUMN_VD_TYPE, vidtype);
-                vcv.put(FavoritesContract.VideosEntry.COLUMN_VD_TITLE, vidtitle);
-
-                mDb.insert(FavoritesContract.VideosEntry.TABLE_NAME, null, vcv);
-
+                    Uri vuri = getContentResolver().insert(FavoritesContract.VideosEntry.CONTENT_URI, vcv);
+                    if (vuri != null) {
+//                    Toast.makeText(getBaseContext(), vuri.toString(), Toast.LENGTH_LONG).show();
+                    }
+                }
             }
         }
     }
 
-    private void removeFavorite(String movieID) {
-        //  call mDb.delete to pass in the TABLE_NAME and the movieId to delete
-        mDb.delete(FavoritesContract.FavoritesEntry.TABLE_NAME,
-                FavoritesContract.FavoritesEntry.COLUMN_MV_MOVIEID + "=" + movieID, null);
-        mDb.delete(FavoritesContract.ReviewsEntry.TABLE_NAME,
-                FavoritesContract.ReviewsEntry.COLUMN_RV_MOVIEID + "=" + movieID, null);
-        mDb.delete(FavoritesContract.VideosEntry.TABLE_NAME,
-                FavoritesContract.VideosEntry.COLUMN_VD_MOVIEID + "=" + movieID, null);
+    private void removeFavorite(String movieId) {
+
+        Log.d(TAG, "removeFavorite: movieId " + movieId);
+
+        String[] mid = {movieId};
+
+        Uri furi = FavoritesContract.FavoritesEntry.CONTENT_URI;
+        furi = furi.buildUpon().appendPath(movieId).build();
+        Log.d(TAG, "removeFavorite: furi " + furi);
+        int deletedFavoriteRows = getContentResolver().delete(furi, movieId + "=?", mid);
+        Log.d(TAG, "removeFavorite: deletedFavoriteRows " + deletedFavoriteRows);
+
+        Uri ruri = FavoritesContract.ReviewsEntry.CONTENT_URI;
+        ruri = ruri.buildUpon().appendPath(movieId).build();
+        Log.d(TAG, "removeFavorite: ruri " + ruri);
+        int deletedReviewRows = getContentResolver().delete(ruri, movieId + "=?", mid);
+        Log.d(TAG, "removeFavorite: deletedReviewRows " + deletedReviewRows);
+
+        Uri vuri = FavoritesContract.VideosEntry.CONTENT_URI;
+        vuri = vuri.buildUpon().appendPath(movieId).build();
+        Log.d(TAG, "removeFavorite: vuri " + furi);
+        int deletedVideoRows = getContentResolver().delete(vuri, movieId + "=?", mid);
+        Log.d(TAG, "removeFavorite: deletedVideoRows " + deletedVideoRows);
+
     }
 
     /**
@@ -289,7 +292,6 @@ public class DetailActivity extends AppCompatActivity
     }
 
     // Override ListItemClickListener's onListItemClick method
-
     /**
      * This is where we receive our callback from
      * {@link com.example.android.pjpopmovies2.ReviewListRecyclerAdapter.ListItemClickListener}
@@ -326,11 +328,20 @@ public class DetailActivity extends AppCompatActivity
 
             String apiKey = BuildConfig.TMDB_API_KEY;
             String movieId = params[0];
-            // IF THE SORT METHOD IS FAVORITES, GET INFO FROM DATABASE
+            // IF THE SORT METHOD IS FAVORITES, GET INFO FROM CONTENTPROVIDER
             if (favoriteMovie) {
 
                 int cPos;
-                Cursor rcursor = getReviewsForFavoriteMovie(movieId);
+                Cursor rcursor = getContentResolver().query(
+                        FavoritesContract.ReviewsEntry.CONTENT_URI
+                                .buildUpon().appendPath(movieId).build(),
+                        null,
+                        null,
+                        null,
+                        null
+                );
+
+//                getReviewsForFavoriteMovie(movieId);
                 if (rcursor.getCount() > 0) { // If rcursor has atleast one row
                     reviewsData = new String[rcursor.getCount()][4];
 //                    Log.d(TAG, "doInBackground: rcursor.getCount() " + rcursor.getCount());
@@ -349,7 +360,7 @@ public class DetailActivity extends AppCompatActivity
                     return reviewsData;
                 } else {
                     reviewsData = new String[1][4];
-                    reviewsData[0][2] = "No Reviews in Database";
+                    reviewsData[0][2] = getString(R.string.no_reviews_db_error);
                     return reviewsData;
                 }
             } else {
@@ -372,9 +383,7 @@ public class DetailActivity extends AppCompatActivity
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                    reviewsData = new String[1][4];
-                    reviewsData[0][2] = "No Reviews Found";
-                    return reviewsData;
+                    return null;
                 }
             }
         }
@@ -398,7 +407,15 @@ public class DetailActivity extends AppCompatActivity
             if (favoriteMovie) {
 
                 int cPos;
-                Cursor vcursor = getVideosForFavoriteMovie(movieId);
+                Cursor vcursor = getContentResolver().query(
+                        FavoritesContract.VideosEntry.CONTENT_URI
+                                .buildUpon().appendPath(movieId).build(),
+                        null,
+                        null,
+                        null,
+                        null
+                );
+//                        getVideosForFavoriteMovie(movieId);
                 if (vcursor.getCount() > 0) { // If vcursor has atleast one row
                     videosData = new String[vcursor.getCount()][3];
 //                    Log.d(TAG, "doInBackground: vcursor.getCount() " + vcursor.getCount());
@@ -415,9 +432,9 @@ public class DetailActivity extends AppCompatActivity
                     vcursor.close();
                     return videosData;
                 } else {
-                    videosData = new String[1][4];
-                    videosData[0][2] = "No Videos in Database";
-                    return videosData;
+//                    videosData = new String[1][4];
+//                    videosData[0][2] = getString(R.string.no_videos_error);
+                    return null;
                 }
             } else {
                 URL VideosRequestUrl = NetworkUtils.buildVideosUrl(movieId, apiKey);
@@ -468,7 +485,7 @@ public class DetailActivity extends AppCompatActivity
     private void openVideoUrl(String url) {
 
         Intent yt_play = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        Intent chooser = Intent.createChooser(yt_play, "Open With");
+        Intent chooser = Intent.createChooser(yt_play, getString(R.string.open_with));
 
         // Make sure there's an app available to launch
         if (yt_play.resolveActivity(getPackageManager()) != null) {
